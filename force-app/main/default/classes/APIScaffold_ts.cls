@@ -11,7 +11,7 @@ private class APIScaffold_ts {
     static void testSuccessfulRouting() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - Scaffold 설정
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
@@ -42,7 +42,7 @@ private class APIScaffold_ts {
     static void testV2Routing() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
@@ -68,7 +68,7 @@ private class APIScaffold_ts {
     static void testRouteNotFound() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .exception(new DefaultExceptionHandler());
 
@@ -93,7 +93,7 @@ private class APIScaffold_ts {
     static void testRouteNotFoundWithoutExceptionHandler() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 예외 핸들러 없음
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1());
 
             RestRequest kReq = new RestRequest();
@@ -118,7 +118,7 @@ private class APIScaffold_ts {
     static void testMultipleRoutes() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
@@ -152,7 +152,7 @@ private class APIScaffold_ts {
             CompositeRouter kRouter = new CompositeRouter();
             kRouter.addProcessor('/error', kErrorProcessor);
 
-            APIScaffold kScaffold = APIScaffold.create()
+            APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', kRouter)
                 .exception(new DefaultExceptionHandler());
 

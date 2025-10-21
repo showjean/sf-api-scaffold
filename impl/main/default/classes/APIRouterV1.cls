@@ -2,7 +2,7 @@
  * @description API v1.0 Router 예제
  */
 public class APIRouterV1 implements APIRouter {
-    private CompositeRouter compositeRouter;
+    private final CompositeRouter compositeRouter;
 
     /**
      * @description 생성자 - 라우트 초기화
@@ -17,8 +17,8 @@ public class APIRouterV1 implements APIRouter {
      */
     private void initializeRoutes() {
         // 헬스 체크 엔드포인트 (상대 경로)
-        this.compositeRouter.addProcessor('/', new HealthCheckProcessor());
-        this.compositeRouter.addProcessor('/health', new HealthCheckProcessor());
+        this.compositeRouter.addProcessor('/', new HealthCheckProcessor('root'));
+        this.compositeRouter.addProcessor('/health', new HealthCheckProcessor('health'));
 
         // 하위 라우터 등록 (상대 경로) - 재사용 가능
         this.compositeRouter.addRouter('/users/*', new APIRouterV2());
@@ -30,10 +30,11 @@ public class APIRouterV1 implements APIRouter {
 
     /**
      * @description APIRouter 인터페이스 구현
+     * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
      * @return 매칭된 APIProcessor
      */
-    public APIProcessor route(String aPath) {
-        return this.compositeRouter.route(aPath);
+    public APIProcessor route(String aPrevPath, String aPath) {
+        return this.compositeRouter.route(aPrevPath, aPath);
     }
 }

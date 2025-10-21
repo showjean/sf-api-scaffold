@@ -2,8 +2,7 @@
  * @description Composite 패턴의 Composite 역할 - 여러 하위 라우터/프로세서를 관리 (상대 경로 지원)
  */
 public class CompositeRouter implements APIRouter {
-    private String prefix;
-    private List<RouteEntry> routes;
+    private final List<RouteEntry> routes;
 
     /**
      * @description 경로 정규화 - trailing slash 제거
@@ -32,8 +31,8 @@ public class CompositeRouter implements APIRouter {
      * @description RouteEntry 내부 클래스 - 경로와 처리자를 매핑
      */
     private class RouteEntry {
-        String pattern;
-        Object handler; // APIRouter 또는 APIProcessor
+        final String pattern;
+        final Object handler; // APIRouter 또는 APIProcessor
 
         RouteEntry(String aPattern, Object aHandler) {
             this.pattern = normalizePath(aPattern);
@@ -47,7 +46,7 @@ public class CompositeRouter implements APIRouter {
          * @return 매칭 여부
          */
         Boolean matches(String aPrevPath, String aPath) {
-            System.debug(LoggingLevel.INFO, this.handler.toString().substringBefore(':') +
+            System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
                     ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
 
             // PathFinder를 사용하여 매칭 확인
@@ -61,15 +60,6 @@ public class CompositeRouter implements APIRouter {
      * @description 기본 생성자 (하위 호환성)
      */
     public CompositeRouter() {
-        this('');
-    }
-
-    /**
-     * @description Prefix를 지정하는 생성자
-     * @param aPrefix 이 라우터가 처리할 경로의 prefix (예: '/api/v1.0')
-     */
-    public CompositeRouter(String aPrefix) {
-        this.prefix = aPrefix;
         this.routes = new List<RouteEntry>();
     }
 
@@ -105,16 +95,7 @@ public class CompositeRouter implements APIRouter {
         System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
 
         PathFinder kPathFinder = new PathFinder('', '');
-
-        // 이 라우터의 prefix는 top-level 호출일 때만 사용 (aPrevPath가 비어있을 때)
-        // 중첩된 라우터인 경우 parent가 이미 prefix를 처리했으므로 사용하지 않음
-        String kEffectivePrevPath;
-        if (String.isBlank(aPrevPath)) {
-            kEffectivePrevPath = this.prefix;
-        }
-        else {
-            kEffectivePrevPath = aPrevPath;
-        }
+        String kEffectivePrevPath = aPrevPath;
 
         for (RouteEntry kEntry : this.routes) {
             if (kEntry.matches(kEffectivePrevPath, aPath)) {

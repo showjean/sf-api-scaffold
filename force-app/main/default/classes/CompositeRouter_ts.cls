@@ -223,13 +223,13 @@ private class CompositeRouter_ts {
     static void testRelativePathRouting() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 상대 경로로 등록된 하위 라우터
-            CompositeRouter kSubRouter = new CompositeRouter('/api/v1.0');
+            CompositeRouter kSubRouter = new CompositeRouter();
             kSubRouter.addProcessor('/health', new TestHealthCheckProcessor());
             kSubRouter.addProcessor('/status', new TestHealthCheckProcessor());
 
             // When - 절대 경로로 요청
-            APIProcessor kProcessor1 = kSubRouter.route('', '/api/v1.0/health');
-            APIProcessor kProcessor2 = kSubRouter.route('', '/api/v1.0/status');
+            APIProcessor kProcessor1 = kSubRouter.route('/api/v1.0', '/api/v1.0/health');
+            APIProcessor kProcessor2 = kSubRouter.route('/api/v1.0', '/api/v1.0/status');
 
             // Then
             Assert.isNotNull(kProcessor1, 'prefix가 제거된 상대 경로로 매칭되어야 함');
@@ -248,15 +248,15 @@ private class CompositeRouter_ts {
             kReusableRouter.addProcessor('/health', new TestHealthCheckProcessor());
 
             // Given - v1.0과 v2.0에 같은 라우터 사용
-            CompositeRouter kV1Router = new CompositeRouter('/api/v1.0');
+            CompositeRouter kV1Router = new CompositeRouter();
             kV1Router.addRouter('/sub/*', kReusableRouter);
 
-            CompositeRouter kV2Router = new CompositeRouter('/api/v2.0');
+            CompositeRouter kV2Router = new CompositeRouter();
             kV2Router.addRouter('/sub/*', kReusableRouter);
 
             // When
-            APIProcessor kV1Processor = kV1Router.route('', '/api/v1.0/sub/health');
-            APIProcessor kV2Processor = kV2Router.route('', '/api/v2.0/sub/health');
+            APIProcessor kV1Processor = kV1Router.route('/api/v1.0', '/api/v1.0/sub/health');
+            APIProcessor kV2Processor = kV2Router.route('/api/v2.0', '/api/v2.0/sub/health');
 
             // Then - 같은 라우터가 다른 경로에서 재사용됨
             Assert.isNotNull(kV1Processor, 'v1.0 경로에서 작동해야 함');
@@ -292,10 +292,10 @@ private class CompositeRouter_ts {
             CompositeRouter kLeafRouter = new CompositeRouter();
             kLeafRouter.addProcessor('/view', new TestHealthCheckProcessor());
 
-            CompositeRouter kMiddleRouter = new CompositeRouter('/api/v1.0');
+            CompositeRouter kMiddleRouter = new CompositeRouter();
             kMiddleRouter.addRouter('/users/*', kLeafRouter);
 
-            CompositeRouter kRootRouter = new CompositeRouter('');
+            CompositeRouter kRootRouter = new CompositeRouter();
             kRootRouter.addRouter('/api/v1.0/*', kMiddleRouter);
 
             // When - 절대 경로 요청

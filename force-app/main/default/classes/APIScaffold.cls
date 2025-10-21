@@ -3,22 +3,26 @@
  * Created by hyodongmin on 2025. 10. 21.
  */
 public class APIScaffold {
-    private CompositeRouter router;
+    private final CompositeRouter router;
     private APIExceptionHandler exceptionHandler;
+    private final String mainPath;
 
     /**
      * @description 기본 생성자 (private)
+     * @param aMainPath Rest API 시작 path
      */
-    private APIScaffold() {
-        this.router = new CompositeRouter('');
+    private APIScaffold(String aMainPath) {
+        this.router = new CompositeRouter();
+        this.mainPath = aMainPath;
     }
 
     /**
      * @description Builder 패턴 시작
+     * @param aMainPath Rest API 시작 path
      * @return APIScaffold 인스턴스 (체이닝용)
      */
-    public static APIScaffold create() {
-        APIScaffold kScaffold = new APIScaffold();
+    public static APIScaffold create(String aMainPath) {
+        APIScaffold kScaffold = new APIScaffold(aMainPath);
         return kScaffold;
     }
 
@@ -51,8 +55,8 @@ public class APIScaffold {
     public void process(RestRequest aReq, RestResponse aRes) {
         try {
             String kPath = aReq.requestURI;
-            System.debug(LoggingLevel.INFO, '⭐️requestURI: ' + kPath);
-            APIProcessor kProcessor = this.router.route('', kPath);
+            System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
+            APIProcessor kProcessor = this.router.route(this.mainPath, kPath);
 
             if (kProcessor != null) {
                 System.debug(LoggingLevel.INFO, '✅Processor -> ' + kProcessor.toString().substringBefore(':'));
