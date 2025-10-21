@@ -1,6 +1,6 @@
 RestRequest kReq = new RestRequest();
 RestResponse kRes = new RestResponse();
-kReq.requestURI = '/api/v1.0/health';
+kReq.requestURI = '/api/v1.0/';
 
 APIScaffold.create('/api')
         .route('/*/*', new APIRouterV1())

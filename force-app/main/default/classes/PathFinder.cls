@@ -16,11 +16,11 @@ public class PathFinder {
     }
 
     /**
-     * @description 다음 경로가 유효한지 확인
+     * @description 다음 경로가 유효한지 확인하고 일치하는 부분의 경로를 반환
      * @param aNextPath 다음 경로
-     * @return 유효하면 true, 아니면 false
+     * @return 일치하는 경로 문자열, 일치하지 않으면 null
      */
-    public Boolean matches(String aNextPath) {
+    public String matches(String aNextPath) {
         String kNormalizedNext = this.normalizePath(aNextPath);
         String kCombinedPath = this.combine(this.prevPath, kNormalizedNext);
 
@@ -33,15 +33,15 @@ public class PathFinder {
 
         // 정확히 일치
         if (kCombinedPath == this.originPath) {
-            return true;
+            return this.originPath;
         }
 
         // 앞부분 일치
         if (this.originPath.startsWith(kCombinedPath + '/')) {
-            return true;
+            return kCombinedPath;
         }
 
-        return false;
+        return null;
     }
 
     /**
@@ -88,9 +88,9 @@ public class PathFinder {
      * @description 와일드카드 패턴 매칭
      * @param aPattern 와일드카드가 포함된 패턴 경로
      * @param aPath 매칭할 실제 경로
-     * @return 매칭되면 true, 아니면 false
+     * @return 매칭되면 경로 문자열, 아니면 null
      */
-    private Boolean matchWildcard(String aPattern, String aPath) {
+    private String matchWildcard(String aPattern, String aPath) {
         List<String> kPatternSegments = this.splitPath(aPattern);
         List<String> kPathSegments = this.splitPath(aPath);
 
@@ -100,12 +100,12 @@ public class PathFinder {
         if (kIsTrailingWildcard) {
             // 끝 와일드카드는 하나 이상의 세그먼트와 매칭
             if (kPatternSegments.size() - 1 > kPathSegments.size()) {
-                return false;
+                return null;
             }
 
             for (Integer i = 0; i < kPatternSegments.size() - 1; i++) {
                 if (i >= kPathSegments.size()) {
-                    return false;
+                    return null;
                 }
 
                 if (kPatternSegments[i].equals('*')) {
@@ -113,16 +113,29 @@ public class PathFinder {
                 }
 
                 if (!kPatternSegments[i].equals(kPathSegments[i])) {
-                    return false;
+                    return null;
                 }
             }
 
-            return true;
+            // 와일드카드가 매칭한 부분까지 포함해서 반환
+            Integer kMatchedCount = Math.min(kPatternSegments.size(), kPathSegments.size());
+            List<String> kMatchedSegments = new List<String>();
+
+            for (Integer i = 0; i < kMatchedCount; i++) {
+                kMatchedSegments.add(kPathSegments[i]);
+            }
+
+            if (kMatchedSegments.isEmpty()) {
+                return '/';
+            }
+            else {
+                return '/' + String.join(kMatchedSegments, '/');
+            }
         }
         else {
             // 중간 와일드카드는 정확한 세그먼트 개수 필요
             if (kPatternSegments.size() != kPathSegments.size()) {
-                return false;
+                return null;
             }
 
             for (Integer i = 0; i < kPatternSegments.size(); i++) {
@@ -131,11 +144,22 @@ public class PathFinder {
                 }
 
                 if (!kPatternSegments[i].equals(kPathSegments[i])) {
-                    return false;
+                    return null;
                 }
             }
 
-            return true;
+            // 패턴 길이만큼만 반환
+            List<String> kMatchedSegments = new List<String>();
+            for (Integer i = 0; i < kPatternSegments.size(); i++) {
+                kMatchedSegments.add(kPathSegments[i]);
+            }
+
+            if (kMatchedSegments.isEmpty()) {
+                return '/';
+            }
+            else {
+                return '/' + String.join(kMatchedSegments, '/');
+            }
         }
     }
 

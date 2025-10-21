@@ -55,3 +55,13 @@ PathEntry 는 계층 구조를 위하여 필요한 만큼의 상대경로를 갖
 이제 PathFinder 를 CompositeRouter 에 적용해줘. 
 
 APIRouter.route() 에 이전 경로 파라메터를 추가하면 로직이 더 간단해지지 않을까?
+
+# 8
+PathFinder 클래스의 matches() 메서드의 반환값이 원본 경로에서 일치하는 만큼의 문자열을 반환하도록 수정해봐
+PathFinder.matchWildcard() 에서는 매치되는 부분까지의 path만 반환하도록 수정해
+
+아니, 
+new PathFinder('/api', '/api/v1.0/health').matches('/*/'); 
+이라면, '/api/v1.0/health' 여기에서, 이만큼('/api/v1.0/') 이 일치하니까 '/api/v1.0/' 을 반환하라고. 
+
+중간 와일드카드도 일치하는 부분까지만 반환하도록 못해?

@@ -49,9 +49,22 @@ public class CompositeRouter implements APIRouter {
             System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
                     ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
 
+            String kNormalizedPath = normalizePath(aPath);
             // PathFinder를 사용하여 매칭 확인
-            PathFinder kFinder = new PathFinder(aPrevPath, aPath);
-            return kFinder.matches(this.pattern);
+            PathFinder kFinder = new PathFinder(aPrevPath, kNormalizedPath);
+            String kResult = kFinder.matches(this.pattern);
+            System.debug(LoggingLevel.INFO, 'Result: ' + kResult);
+            
+            // todo refactoring
+            // Composite인 경우 재귀적으로 route() 호출
+            if (this.handler instanceof APIRouter) {
+                return String.isNotBlank(kResult);
+            }
+            // Leaf인 경우 Processor 직접 반환
+            else if (this.handler instanceof APIProcessor) {
+                return kResult == kNormalizedPath;
+            }
+            return false;
         }
 
     }
