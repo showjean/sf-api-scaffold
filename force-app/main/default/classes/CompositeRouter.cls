@@ -41,106 +41,20 @@ public class CompositeRouter implements APIRouter {
         }
 
         /**
-         * @description 경로 매칭 확인 (Apex는 와일드카드(*)만 지원)
+         * @description 경로 매칭 확인 (PathFinder 사용)
+         * @param aPrevPath 지나온 경로
          * @param aPath 요청 경로
          * @return 매칭 여부
          */
-        Boolean matches(String aPath) {
-            // 경로 정규화 (trailing slash 제거)
-            String kNormalizedPath = normalizePath(aPath);
-
+        Boolean matches(String aPrevPath, String aPath) {
             System.debug(LoggingLevel.INFO, this.handler.toString().substringBefore(':') +
-                    ', matches() this:' + this.pattern + ', path:' + kNormalizedPath);
+                    ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
 
-            // 정확한 경로 매칭
-            if (this.pattern == kNormalizedPath) {
-                return true;
-            }
-
-            // 와일드카드가 없는 경우
-            if (!this.pattern.contains('*')) {
-                return false;
-            }
-
-            // 끝에 와일드카드 (예: /api/v1.0/*) - 모든 하위 경로 매칭
-            if (this.pattern.endsWith('/*')) {
-                String kPrefix = this.pattern.substring(0, this.pattern.length() - 2);
-                return kNormalizedPath.startsWith(kPrefix);
-            }
-
-            // 중간에 와일드카드 (예: /api/v1.0/*/view) - 세그먼트별 매칭
-            return this.matchesWithWildcard(kNormalizedPath);
+            // PathFinder를 사용하여 매칭 확인
+            PathFinder kFinder = new PathFinder(aPrevPath, aPath);
+            return kFinder.matches(this.pattern);
         }
 
-        /**
-         * @description 와일드카드를 포함한 패턴 매칭
-         * @param aPath 요청 경로
-         * @return 매칭 여부
-         */
-        private Boolean matchesWithWildcard(String aPath) {
-            List<String> kPatternParts = this.pattern.split('/');
-            List<String> kPathParts = aPath.split('/');
-
-            // 세그먼트 개수가 다르면 매칭 실패
-            if (kPatternParts.size() != kPathParts.size()) {
-                return false;
-            }
-
-            // 각 세그먼트 비교
-            for (Integer i = 0; i < kPatternParts.size(); i++) {
-                String kPatternPart = kPatternParts[i];
-                String kPathPart = kPathParts[i];
-
-                // 와일드카드는 모든 값과 매칭
-                if (kPatternPart == '*') {
-                    continue;
-                }
-
-                // 정확히 일치해야 함
-                if (kPatternPart != kPathPart) {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        /**
-         * @description 하위 Router에 전달할 prefix 추출
-         * @return 패턴에서 추출한 prefix
-         */
-        String extractPrefix() {
-            // 끝 와일드카드 패턴 (예: /api/v1.0/*)
-            if (this.pattern.endsWith('/*')) {
-                return this.pattern.substring(0, this.pattern.length() - 2);
-            }
-            // 정확한 경로
-            return this.pattern;
-        }
-
-        /**
-         * @description 경로에서 패턴의 prefix를 제거하여 상대 경로 반환
-         * @param aPath 절대 경로
-         * @return 상대 경로
-         */
-        String toRelativePath(String aPath) {
-            String kPrefix = this.extractPrefix();
-
-            if (aPath.startsWith(kPrefix)) {
-                String kRelativePath = aPath.substring(kPrefix.length());
-                // prefix 제거 후 빈 문자열이면 '/'로 변환
-                if (String.isBlank(kRelativePath)) {
-                    return '/';
-                }
-                // '/'로 시작하지 않으면 추가
-                if (!kRelativePath.startsWith('/')) {
-                    return '/' + kRelativePath;
-                }
-                return kRelativePath;
-            }
-
-            return aPath;
-        }
     }
 
     /**
@@ -183,20 +97,41 @@ public class CompositeRouter implements APIRouter {
 
     /**
      * @description APIRouter 인터페이스 구현 - 경로에 맞는 Processor 반환
+     * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
      * @return 매칭된 APIProcessor
      */
-    public APIProcessor route(String aPath) {
-        // prefix 제거하여 상대 경로로 변환
-        String kRelativePath = this.removePrefix(aPath);
-        System.debug(LoggingLevel.INFO, 'Path: ' + aPath + ', Relative Path => ' + kRelativePath);
+    public APIProcessor route(String aPrevPath, String aPath) {
+        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
+
+        PathFinder kPathFinder = new PathFinder('', '');
+
+        // 이 라우터의 prefix는 top-level 호출일 때만 사용 (aPrevPath가 비어있을 때)
+        // 중첩된 라우터인 경우 parent가 이미 prefix를 처리했으므로 사용하지 않음
+        String kEffectivePrevPath;
+        if (String.isBlank(aPrevPath)) {
+            kEffectivePrevPath = this.prefix;
+        }
+        else {
+            kEffectivePrevPath = aPrevPath;
+        }
 
         for (RouteEntry kEntry : this.routes) {
-            if (kEntry.matches(kRelativePath)) {
-                // Composite인 경우 재귀적으로 route() 호출 (상대 경로 전달)
+            if (kEntry.matches(kEffectivePrevPath, aPath)) {
+                // 새로운 prevPath 계산: 와일드카드 패턴은 /* 제거
+                String kNewPrevPath;
+                if (kEntry.pattern.endsWith('/*')) {
+                    // 중첩 라우팅을 위해 trailing /* 제거
+                    String kPatternWithoutWildcard = kEntry.pattern.substring(0, kEntry.pattern.length() - 2);
+                    kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kPatternWithoutWildcard);
+                }
+                else {
+                    kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
+                }
+
+                // Composite인 경우 재귀적으로 route() 호출
                 if (kEntry.handler instanceof APIRouter) {
-                    String kSubPath = kEntry.toRelativePath(kRelativePath);
-                    return ((APIRouter)kEntry.handler).route(kSubPath);
+                    return ((APIRouter)kEntry.handler).route(kNewPrevPath, aPath);
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
@@ -205,31 +140,5 @@ public class CompositeRouter implements APIRouter {
             }
         }
         return null;
-    }
-
-    /**
-     * @description 경로에서 prefix 제거
-     * @param aPath 절대 경로
-     * @return prefix가 제거된 상대 경로
-     */
-    private String removePrefix(String aPath) {
-        if (String.isBlank(this.prefix)) {
-            return aPath;
-        }
-
-        if (aPath.startsWith(this.prefix)) {
-            String kRelativePath = aPath.substring(this.prefix.length());
-            // prefix 제거 후 빈 문자열이면 '/'로 변환
-            if (String.isBlank(kRelativePath)) {
-                return '/';
-            }
-            // '/'로 시작하지 않으면 추가
-            if (!kRelativePath.startsWith('/')) {
-                return '/' + kRelativePath;
-            }
-            return kRelativePath;
-        }
-
-        return aPath;
     }
 }

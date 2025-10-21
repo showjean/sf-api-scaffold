@@ -50,3 +50,8 @@ PathEntry 는 계층 구조를 위하여 필요한 만큼의 상대경로를 갖
 
 이제 PathFinder.find() 에 와일드카드도 지원되도록 수정하자. 와일드카드의 위치는 자유롭다.
 예> `/api/v1.0/*`, `/api/*/health`, `/api/*/user/*`
+
+# 7
+이제 PathFinder 를 CompositeRouter 에 적용해줘. 
+
+APIRouter.route() 에 이전 경로 파라메터를 추가하면 로직이 더 간단해지지 않을까?

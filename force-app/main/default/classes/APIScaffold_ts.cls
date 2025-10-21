@@ -210,14 +210,15 @@ private class APIScaffold_ts {
 
         /**
          * @description APIRouter 인터페이스 구현
+         * @param aPrevPath 지나온 경로
          * @param aPath 요청 경로
          * @return 매칭된 APIProcessor
          */
-        public APIProcessor route(String aPath) {
-            return this.compositeRouter.route(aPath);
+        public APIProcessor route(String aPrevPath, String aPath) {
+            return this.compositeRouter.route(aPrevPath, aPath);
         }
     }
-    
+
     class TestAPIRouterV2 implements APIRouter {
         private CompositeRouter compositeRouter;
 
@@ -242,11 +243,12 @@ private class APIScaffold_ts {
 
         /**
          * @description APIRouter 인터페이스 구현
+         * @param aPrevPath 지나온 경로
          * @param aPath 요청 경로
          * @return 매칭된 APIProcessor
          */
-        public APIProcessor route(String aPath) {
-            return this.compositeRouter.route(aPath);
+        public APIProcessor route(String aPrevPath, String aPath) {
+            return this.compositeRouter.route(aPrevPath, aPath);
         }
     }
     

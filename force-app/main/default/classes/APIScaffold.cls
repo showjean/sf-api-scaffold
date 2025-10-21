@@ -52,7 +52,7 @@ public class APIScaffold {
         try {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️requestURI: ' + kPath);
-            APIProcessor kProcessor = this.router.route(kPath);
+            APIProcessor kProcessor = this.router.route('', kPath);
 
             if (kProcessor != null) {
                 System.debug(LoggingLevel.INFO, '✅Processor -> ' + kProcessor.toString().substringBefore(':'));

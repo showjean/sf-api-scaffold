@@ -15,7 +15,7 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor = kRouter.route('/api/v1.0/health');
+            APIProcessor kProcessor = kRouter.route('', '/api/v1.0/health');
 
             // Then
             Assert.isNotNull(kProcessor, 'Processor를 찾아야 함');
@@ -34,8 +34,8 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/users/*', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor1 = kRouter.route('/api/users/123');
-            APIProcessor kProcessor2 = kRouter.route('/api/users/abc/detail');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/users/123');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/users/abc/detail');
 
             // Then
             Assert.isNotNull(kProcessor1, '와일드카드 매칭이 되어야 함');
@@ -58,7 +58,7 @@ private class CompositeRouter_ts {
             kMainRouter.addRouter('/api/users/*', kSubRouter);
 
             // When
-            APIProcessor kProcessor = kMainRouter.route('/api/users/list');
+            APIProcessor kProcessor = kMainRouter.route('', '/api/users/list');
 
             // Then
             Assert.isNotNull(kProcessor, '중첩된 라우터가 정상 작동해야 함');
@@ -78,7 +78,7 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/users/*', new NotFoundProcessor());
 
             // When
-            APIProcessor kProcessor = kRouter.route('/api/users/special');
+            APIProcessor kProcessor = kRouter.route('', '/api/users/special');
 
             // Then
             Assert.isNotNull(kProcessor, 'Processor를 찾아야 함');
@@ -97,7 +97,7 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor = kRouter.route('/api/v2.0/health');
+            APIProcessor kProcessor = kRouter.route('', '/api/v2.0/health');
 
             // Then
             Assert.isNull(kProcessor, '매칭되는 경로가 없으면 null을 반환해야 함');
@@ -116,8 +116,8 @@ private class CompositeRouter_ts {
                 .addProcessor('/api/status', new NotFoundProcessor());
 
             // Then
-            Assert.isNotNull(kRouter.route('/api/health'), '첫 번째 경로가 매칭되어야 함');
-            Assert.isNotNull(kRouter.route('/api/status'), '두 번째 경로가 매칭되어야 함');
+            Assert.isNotNull(kRouter.route('', '/api/health'), '첫 번째 경로가 매칭되어야 함');
+            Assert.isNotNull(kRouter.route('', '/api/status'), '두 번째 경로가 매칭되어야 함');
         }
     }
 
@@ -132,9 +132,9 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor1 = kRouter.route('/api/v1.0/users/view');
-            APIProcessor kProcessor2 = kRouter.route('/api/v1.0/orders/view');
-            APIProcessor kProcessor3 = kRouter.route('/api/v1.0/products/view');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/v1.0/users/view');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/v1.0/orders/view');
+            APIProcessor kProcessor3 = kRouter.route('', '/api/v1.0/products/view');
 
             // Then
             Assert.isNotNull(kProcessor1, '중간 와일드카드 매칭 - users');
@@ -154,9 +154,9 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When - 세그먼트 개수가 다름
-            APIProcessor kProcessor1 = kRouter.route('/api/v1.0/users');
-            APIProcessor kProcessor2 = kRouter.route('/api/v1.0/users/123/view');
-            APIProcessor kProcessor3 = kRouter.route('/api/v1.0/users/edit');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/v1.0/users');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/v1.0/users/123/view');
+            APIProcessor kProcessor3 = kRouter.route('', '/api/v1.0/users/edit');
 
             // Then
             Assert.isNull(kProcessor1, '세그먼트 개수 부족');
@@ -176,7 +176,7 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/*/users/*/view', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor = kRouter.route('/api/v1/users/123/view');
+            APIProcessor kProcessor = kRouter.route('', '/api/v1/users/123/view');
 
             // Then
             Assert.isNotNull(kProcessor, '여러 와일드카드 매칭');
@@ -195,9 +195,9 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/orders/*/view', new NotFoundProcessor()); // 중간 와일드카드
 
             // When - 끝 와일드카드는 모든 하위 경로 매칭
-            APIProcessor kProcessor1 = kRouter.route('/api/users/123');
-            APIProcessor kProcessor2 = kRouter.route('/api/users/123/detail');
-            APIProcessor kProcessor3 = kRouter.route('/api/users/123/detail/info');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/users/123');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/users/123/detail');
+            APIProcessor kProcessor3 = kRouter.route('', '/api/users/123/detail/info');
 
             // Then
             Assert.isNotNull(kProcessor1, '끝 와일드카드 - 1단계');
@@ -205,9 +205,9 @@ private class CompositeRouter_ts {
             Assert.isNotNull(kProcessor3, '끝 와일드카드 - 3단계');
 
             // When - 중간 와일드카드는 정확한 세그먼트 개수만 매칭
-            APIProcessor kProcessor4 = kRouter.route('/api/orders/123/view');
-            APIProcessor kProcessor5 = kRouter.route('/api/orders/123');
-            APIProcessor kProcessor6 = kRouter.route('/api/orders/123/view/detail');
+            APIProcessor kProcessor4 = kRouter.route('', '/api/orders/123/view');
+            APIProcessor kProcessor5 = kRouter.route('', '/api/orders/123');
+            APIProcessor kProcessor6 = kRouter.route('', '/api/orders/123/view/detail');
 
             // Then
             Assert.isNotNull(kProcessor4, '중간 와일드카드 - 정확한 매칭');
@@ -228,8 +228,8 @@ private class CompositeRouter_ts {
             kSubRouter.addProcessor('/status', new TestHealthCheckProcessor());
 
             // When - 절대 경로로 요청
-            APIProcessor kProcessor1 = kSubRouter.route('/api/v1.0/health');
-            APIProcessor kProcessor2 = kSubRouter.route('/api/v1.0/status');
+            APIProcessor kProcessor1 = kSubRouter.route('', '/api/v1.0/health');
+            APIProcessor kProcessor2 = kSubRouter.route('', '/api/v1.0/status');
 
             // Then
             Assert.isNotNull(kProcessor1, 'prefix가 제거된 상대 경로로 매칭되어야 함');
@@ -255,8 +255,8 @@ private class CompositeRouter_ts {
             kV2Router.addRouter('/sub/*', kReusableRouter);
 
             // When
-            APIProcessor kV1Processor = kV1Router.route('/api/v1.0/sub/health');
-            APIProcessor kV2Processor = kV2Router.route('/api/v2.0/sub/health');
+            APIProcessor kV1Processor = kV1Router.route('', '/api/v1.0/sub/health');
+            APIProcessor kV2Processor = kV2Router.route('', '/api/v2.0/sub/health');
 
             // Then - 같은 라우터가 다른 경로에서 재사용됨
             Assert.isNotNull(kV1Processor, 'v1.0 경로에서 작동해야 함');
@@ -275,7 +275,7 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/health', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor = kRouter.route('/api/health');
+            APIProcessor kProcessor = kRouter.route('', '/api/health');
 
             // Then
             Assert.isNotNull(kProcessor, 'prefix 없이도 정상 작동해야 함');
@@ -299,7 +299,7 @@ private class CompositeRouter_ts {
             kRootRouter.addRouter('/api/v1.0/*', kMiddleRouter);
 
             // When - 절대 경로 요청
-            APIProcessor kProcessor = kRootRouter.route('/api/v1.0/users/view');
+            APIProcessor kProcessor = kRootRouter.route('', '/api/v1.0/users/view');
 
             // Then
             Assert.isNotNull(kProcessor, '중첩된 상대 경로가 정상 작동해야 함');
@@ -317,8 +317,8 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/users', new TestHealthCheckProcessor());
 
             // When - trailing slash 있는 경로로 요청
-            APIProcessor kProcessor1 = kRouter.route('/api/users');
-            APIProcessor kProcessor2 = kRouter.route('/api/users/');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/users');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/users/');
 
             // Then - 둘 다 매칭되어야 함
             Assert.isNotNull(kProcessor1, 'trailing slash 없는 경로 매칭');
@@ -337,8 +337,8 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor1 = kRouter.route('/');
-            APIProcessor kProcessor2 = kRouter.route('');
+            APIProcessor kProcessor1 = kRouter.route('', '/');
+            APIProcessor kProcessor2 = kRouter.route('', '');
 
             // Then
             Assert.isNotNull(kProcessor1, '루트 경로 / 매칭');
@@ -357,8 +357,8 @@ private class CompositeRouter_ts {
             kRouter.addProcessor('/api/users/', new TestHealthCheckProcessor());
 
             // When
-            APIProcessor kProcessor1 = kRouter.route('/api/users');
-            APIProcessor kProcessor2 = kRouter.route('/api/users/');
+            APIProcessor kProcessor1 = kRouter.route('', '/api/users');
+            APIProcessor kProcessor2 = kRouter.route('', '/api/users/');
 
             // Then - 둘 다 매칭
             Assert.isNotNull(kProcessor1, '패턴에 trailing slash 있어도 없는 경로와 매칭');
