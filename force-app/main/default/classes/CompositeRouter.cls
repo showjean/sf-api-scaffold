@@ -17,7 +17,7 @@ public class CompositeRouter implements APIRouter {
         }
 
         /**
-         * @description 경로 매칭 확인
+         * @description 경로 매칭 확인 (Apex는 와일드카드(*)만 지원)
          * @param aPath 요청 경로
          * @return 매칭 여부
          */
@@ -27,43 +27,46 @@ public class CompositeRouter implements APIRouter {
                 return true;
             }
 
-            // 와일드카드(*) 매칭
+            // 와일드카드가 없는 경우
+            if (!this.pattern.contains('*')) {
+                return false;
+            }
+
+            // 끝에 와일드카드 (예: /api/v1.0/*) - 모든 하위 경로 매칭
             if (this.pattern.endsWith('/*')) {
                 String kPrefix = this.pattern.substring(0, this.pattern.length() - 2);
                 return aPath.startsWith(kPrefix);
             }
 
-            // 파라미터(:id) 매칭
-            if (this.pattern.contains(':')) {
-                return this.matchesWithParams(aPath);
-            }
-
-            return false;
+            // 중간에 와일드카드 (예: /api/v1.0/*/view) - 세그먼트별 매칭
+            return this.matchesWithWildcard(aPath);
         }
 
         /**
-         * @description 경로 파라미터를 포함한 매칭
+         * @description 와일드카드를 포함한 패턴 매칭
          * @param aPath 요청 경로
          * @return 매칭 여부
          */
-        private Boolean matchesWithParams(String aPath) {
+        private Boolean matchesWithWildcard(String aPath) {
             List<String> kPatternParts = this.pattern.split('/');
             List<String> kPathParts = aPath.split('/');
 
+            // 세그먼트 개수가 다르면 매칭 실패
             if (kPatternParts.size() != kPathParts.size()) {
                 return false;
             }
 
+            // 각 세그먼트 비교
             for (Integer i = 0; i < kPatternParts.size(); i++) {
                 String kPatternPart = kPatternParts[i];
                 String kPathPart = kPathParts[i];
 
-                // 파라미터 부분은 모두 매칭으로 간주
-                if (kPatternPart.startsWith(':')) {
+                // 와일드카드는 모든 값과 매칭
+                if (kPatternPart == '*') {
                     continue;
                 }
 
-                // 일반 부분은 정확히 일치해야 함
+                // 정확히 일치해야 함
                 if (kPatternPart != kPathPart) {
                     return false;
                 }
