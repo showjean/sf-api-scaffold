@@ -33,3 +33,17 @@ CompositeRouter 에 보면 `:` 로 구분되는 경로 변수를 처리하고 �
 
 # 4
 CompositeRouter.matches() 에서 pattern 과 path 에 마지막 문자가 한쪽에만 `/` 인 경우 다른 것으로 판단하는데, 이를 같다고 판단하면 문제가 될까?
+
+# 5
+CompositeRouter.matches() 의 규칙과 CompositeRouter.toRelativePath() 의 규칙이 맞지 않아보이는데, 그래서 일치한 경로라도 다음 단계에서는 불일치가 된다.
+예를 들면 `/api/*/health` 로 경로를 설정하고, `/api/v1.0/health` 로 요청하면 올바른 라우터를 찾지 못해.
+
+그럼, APIRouter.route() 에 파라메터를 추가해서 지나온 경로를 추적할 수 있으면 중간 와일드카드에도 라우터를 등록할 수 있을까?
+
+# 6
+PathFinder 클래스를 만든다. .find(PrevPath, OriginPath) 메서드를 이용하여 주어지는 지나온 경로와 요청 경로를 바탕으로 등록된 PathEntry 중 적합한 하나의 엔트리를 찾는다.
+PathEntry 는 계층 구조를 위하여 필요한 만큼의 상대경로를 갖고 있다. 경로에 와일드 카드는 허용하지 않는다.
+이렇게 하나 만들어줘.
+
+더 간단하게 수정해보자. PathFinder 생성자에 지나온 경로와, 원본 경로를 주고, .find(nextPath) 로 가능하면 true, 아니면 false 를 반환하는 방식으로 변경해줘.
+원본 경로와 완벽히 일치하지 않더라도 앞부분이 일치하면 유효한 걸로 판단해줘.
