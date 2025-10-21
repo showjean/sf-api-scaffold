@@ -12,14 +12,14 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/v1.0/health', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
             APIProcessor kProcessor = kRouter.route('/api/v1.0/health');
 
             // Then
             Assert.isNotNull(kProcessor, 'Processor를 찾아야 함');
-            Assert.isTrue(kProcessor instanceof HealthCheckProcessor, 'HealthCheckProcessor여야 함');
+            Assert.isTrue(kProcessor instanceof TestHealthCheckProcessor, 'TestHealthCheckProcessor여야 함');
         }
     }
 
@@ -31,7 +31,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/users/*', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/users/*', new TestHealthCheckProcessor());
 
             // When
             APIProcessor kProcessor1 = kRouter.route('/api/users/123');
@@ -51,7 +51,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 하위 라우터 생성
             CompositeRouter kSubRouter = new CompositeRouter();
-            kSubRouter.addProcessor('/api/users/list', new HealthCheckProcessor());
+            kSubRouter.addProcessor('/api/users/list', new TestHealthCheckProcessor());
 
             // Given - 상위 라우터에 하위 라우터 등록
             CompositeRouter kMainRouter = new CompositeRouter();
@@ -62,7 +62,7 @@ private class CompositeRouter_ts {
 
             // Then
             Assert.isNotNull(kProcessor, '중첩된 라우터가 정상 작동해야 함');
-            Assert.isTrue(kProcessor instanceof HealthCheckProcessor, 'HealthCheckProcessor여야 함');
+            Assert.isTrue(kProcessor instanceof TestHealthCheckProcessor, 'TestHealthCheckProcessor여야 함');
         }
     }
 
@@ -74,7 +74,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 먼저 등록된 정확한 경로가 와일드카드보다 우선
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/users/special', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/users/special', new TestHealthCheckProcessor());
             kRouter.addProcessor('/api/users/*', new NotFoundProcessor());
 
             // When
@@ -82,7 +82,7 @@ private class CompositeRouter_ts {
 
             // Then
             Assert.isNotNull(kProcessor, 'Processor를 찾아야 함');
-            Assert.isTrue(kProcessor instanceof HealthCheckProcessor, '정확한 경로가 먼저 매칭되어야 함');
+            Assert.isTrue(kProcessor instanceof TestHealthCheckProcessor, '정확한 경로가 먼저 매칭되어야 함');
         }
     }
 
@@ -94,7 +94,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/v1.0/health', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
             APIProcessor kProcessor = kRouter.route('/api/v2.0/health');
@@ -112,7 +112,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given & When - 체이닝으로 여러 경로 등록
             CompositeRouter kRouter = new CompositeRouter()
-                .addProcessor('/api/health', new HealthCheckProcessor())
+                .addProcessor('/api/health', new TestHealthCheckProcessor())
                 .addProcessor('/api/status', new NotFoundProcessor());
 
             // Then
@@ -129,7 +129,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/v1.0/*/view', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When
             APIProcessor kProcessor1 = kRouter.route('/api/v1.0/users/view');
@@ -151,7 +151,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/v1.0/*/view', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When - 세그먼트 개수가 다름
             APIProcessor kProcessor1 = kRouter.route('/api/v1.0/users');
@@ -173,7 +173,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/*/users/*/view', new HealthCheckProcessor());
+            kRouter.addProcessor('/api/*/users/*/view', new TestHealthCheckProcessor());
 
             // When
             APIProcessor kProcessor = kRouter.route('/api/v1/users/123/view');
@@ -191,7 +191,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/users/*', new HealthCheckProcessor());     // 끝 와일드카드
+            kRouter.addProcessor('/api/users/*', new TestHealthCheckProcessor());     // 끝 와일드카드
             kRouter.addProcessor('/api/orders/*/view', new NotFoundProcessor()); // 중간 와일드카드
 
             // When - 끝 와일드카드는 모든 하위 경로 매칭
@@ -215,4 +215,24 @@ private class CompositeRouter_ts {
             Assert.isNull(kProcessor6, '중간 와일드카드 - 세그먼트 초과');
         }
     }
+    
+    class TestHealthCheckProcessor implements APIProcessor {
+        /**
+         * @description 헬스 체크 요청 처리
+         * @param aReq RestRequest 객체
+         * @param aRes RestResponse 객체
+         */
+        public void process(RestRequest aReq, RestResponse aRes) {
+            Map<String, Object> kResponse = new Map<String, Object>{
+                    'status' => 'healthy',
+                    'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
+                    'version' => '1.0.0'
+            };
+
+            aRes.statusCode = 200;
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
 }

@@ -12,8 +12,8 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - Scaffold 설정
             APIScaffold kScaffold = APIScaffold.create()
-                .route('/api/v1.0/*', new APIRouterV1())
-                .route('/api/v2.0/*', new APIRouterV2())
+                .route('/api/v1.0/*', new TestAPIRouterV1())
+                .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
 
             // Given - Mock Request/Response
@@ -43,8 +43,8 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             APIScaffold kScaffold = APIScaffold.create()
-                .route('/api/v1.0/*', new APIRouterV1())
-                .route('/api/v2.0/*', new APIRouterV2())
+                .route('/api/v1.0/*', new TestAPIRouterV1())
+                .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
 
             RestRequest kReq = new RestRequest();
@@ -69,7 +69,7 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             APIScaffold kScaffold = APIScaffold.create()
-                .route('/api/v1.0/*', new APIRouterV1())
+                .route('/api/v1.0/*', new TestAPIRouterV1())
                 .exception(new DefaultExceptionHandler());
 
             RestRequest kReq = new RestRequest();
@@ -94,7 +94,7 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 예외 핸들러 없음
             APIScaffold kScaffold = APIScaffold.create()
-                .route('/api/v1.0/*', new APIRouterV1());
+                .route('/api/v1.0/*', new TestAPIRouterV1());
 
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
@@ -119,8 +119,8 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             APIScaffold kScaffold = APIScaffold.create()
-                .route('/api/v1.0/*', new APIRouterV1())
-                .route('/api/v2.0/*', new APIRouterV2())
+                .route('/api/v1.0/*', new TestAPIRouterV1())
+                .route('/api/v2.0/*', new TestAPIRouterV2())
                 .exception(new DefaultExceptionHandler());
 
             // When & Then - V1 테스트
@@ -184,4 +184,89 @@ private class APIScaffold_ts {
      */
     private class CustomException extends Exception {
     }
+
+    class TestAPIRouterV1 implements APIRouter {
+        private CompositeRouter compositeRouter;
+
+        /**
+         * @description 생성자 - 라우트 초기화
+         */
+        public TestAPIRouterV1() {
+            this.compositeRouter = new CompositeRouter();
+            this.initializeRoutes();
+        }
+
+        /**
+         * @description 라우트 초기화
+         */
+        private void initializeRoutes() {
+            // 헬스 체크 엔드포인트
+            this.compositeRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
+
+            // 추가 라우트는 여기에 등록
+            // this.compositeRouter.addProcessor('/api/v1.0/users', new UserListProcessor());
+            // this.compositeRouter.addRouter('/api/v1.0/users/*', new UserRouter());
+        }
+
+        /**
+         * @description APIRouter 인터페이스 구현
+         * @param aPath 요청 경로
+         * @return 매칭된 APIProcessor
+         */
+        public APIProcessor route(String aPath) {
+            return this.compositeRouter.route(aPath);
+        }
+    }
+    
+    class TestAPIRouterV2 implements APIRouter {
+        private CompositeRouter compositeRouter;
+
+        /**
+         * @description 생성자 - 라우트 초기화
+         */
+        public TestAPIRouterV2() {
+            this.compositeRouter = new CompositeRouter();
+            this.initializeRoutes();
+        }
+
+        /**
+         * @description 라우트 초기화
+         */
+        private void initializeRoutes() {
+            // v2.0용 헬스 체크
+            this.compositeRouter.addProcessor('/api/v2.0/health', new TestHealthCheckProcessor());
+
+            // v2.0 추가 라우트
+            // this.compositeRouter.addProcessor('/api/v2.0/status', new StatusProcessor());
+        }
+
+        /**
+         * @description APIRouter 인터페이스 구현
+         * @param aPath 요청 경로
+         * @return 매칭된 APIProcessor
+         */
+        public APIProcessor route(String aPath) {
+            return this.compositeRouter.route(aPath);
+        }
+    }
+    
+    class TestHealthCheckProcessor implements APIProcessor {
+        /**
+         * @description 헬스 체크 요청 처리
+         * @param aReq RestRequest 객체
+         * @param aRes RestResponse 객체
+         */
+        public void process(RestRequest aReq, RestResponse aRes) {
+            Map<String, Object> kResponse = new Map<String, Object>{
+                    'status' => 'healthy',
+                    'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
+                    'version' => '1.0.0'
+            };
+
+            aRes.statusCode = 200;
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
 }
