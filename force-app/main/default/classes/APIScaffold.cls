@@ -56,7 +56,7 @@ public class APIScaffold {
         try {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
-            APIContext kContext = this.router.route(this.mainPath, kPath);
+            APIContext kContext = this.router.route(new APIContext(), this.mainPath, kPath);
             APIProcessor kProcessor = kContext.processor;
 
             if (kProcessor != null) {

@@ -25,11 +25,12 @@ public class APIRouterV2 implements APIRouter {
 
     /**
      * @description APIRouter 인터페이스 구현
+     * @param aContext APIContext 객체
      * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
      * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
      */
-    public APIContext route(String aPrevPath, String aPath) {
-        return this.compositeRouter.route(aPrevPath, aPath);
+    public APIContext route(APIContext aContext, String aPrevPath, String aPath) {
+        return this.compositeRouter.route(aContext, aPrevPath, aPath);
     }
 }

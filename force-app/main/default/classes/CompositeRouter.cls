@@ -100,11 +100,12 @@ public class CompositeRouter implements APIRouter {
 
     /**
      * @description APIRouter 인터페이스 구현 - 경로에 맞는 Processor 반환
+     * @param aContext APIContext 객체
      * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
      * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
      */
-    public APIContext route(String aPrevPath, String aPath) {
+    public APIContext route(APIContext aContext, String aPrevPath, String aPath) {
 //        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
 
         PathFinder kPathFinder = new PathFinder('', '');
@@ -124,7 +125,14 @@ public class CompositeRouter implements APIRouter {
                         kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
                     }
 
-                    APIContext kContext = ((APIRouter) kEntry.handler).route(kNewPrevPath, aPath);
+                    APIContext kContext = new APIContext();
+                    kContext.pattern = kNewPrevPath;
+                    kContext.requestUrl = aPath;
+                    kContext.pathVar = kPathFinder.parsePathVariables(kNewPrevPath, aPath);
+                    System.debug(LoggingLevel.INFO, 'Pattern: ' + kNewPrevPath);
+                    System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
+
+                    kContext = ((APIRouter) kEntry.handler).route(kContext, kNewPrevPath, aPath);
                     if (null != kContext) {
                         return kContext;
                     }
