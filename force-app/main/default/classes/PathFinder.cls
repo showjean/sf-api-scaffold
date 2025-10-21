@@ -27,7 +27,7 @@ public class PathFinder {
 //        System.debug(LoggingLevel.DEBUG, 'PathFinder.matches() - Combined: ' + kCombinedPath + ', Origin: ' + this.originPath);
 
         // 와일드카드 패턴 매칭
-        if (kCombinedPath.contains('*')) {
+        if (kCombinedPath.contains('*') || kCombinedPath.contains(':')) {
             return this.matchWildcard(kCombinedPath, this.originPath);
         }
 
@@ -112,6 +112,10 @@ public class PathFinder {
                     continue;
                 }
 
+                if (kPatternSegments[i].startsWith(':')) {
+                    continue;
+                }
+
                 if (!kPatternSegments[i].equals(kPathSegments[i])) {
                     return null;
                 }
@@ -140,6 +144,10 @@ public class PathFinder {
 
             for (Integer i = 0; i < kPatternSegments.size(); i++) {
                 if (kPatternSegments[i].equals('*')) {
+                    continue;
+                }
+
+                if (kPatternSegments[i].startsWith(':')) {
                     continue;
                 }
 
