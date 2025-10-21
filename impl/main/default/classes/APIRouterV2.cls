@@ -17,7 +17,7 @@ public class APIRouterV2 implements APIRouter {
      */
     private void initializeRoutes() {
         // 헬스 체크 엔드포인트 (상대 경로) - 재사용 가능
-        this.compositeRouter.addProcessor('/health', new HealthCheckProcessor());
+        this.compositeRouter.addProcessor('/status', new HealthCheckProcessor());
 
         // 추가 라우트 (상대 경로 사용)
         // this.compositeRouter.addProcessor('/status', new StatusProcessor());

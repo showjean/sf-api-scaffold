@@ -55,6 +55,7 @@ public class APIScaffold {
             APIProcessor kProcessor = this.router.route(kPath);
 
             if (kProcessor != null) {
+                System.debug(LoggingLevel.INFO, '✅Processor -> ' + kProcessor.toString().substringBefore(':'));
                 kProcessor.process(aReq, aRes);
             }
             else {

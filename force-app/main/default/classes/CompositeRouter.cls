@@ -6,6 +6,29 @@ public class CompositeRouter implements APIRouter {
     private List<RouteEntry> routes;
 
     /**
+     * @description 경로 정규화 - trailing slash 제거
+     * @param aPath 원본 경로
+     * @return 정규화된 경로
+     */
+    private static String normalizePath(String aPath) {
+        if (String.isBlank(aPath)) {
+            return '/';
+        }
+
+        // 와일드카드 패턴은 정규화하지 않음
+        if (aPath.contains('*')) {
+            return aPath;
+        }
+
+        // trailing slash 제거 (루트 경로는 유지)
+        if (aPath.length() > 1 && aPath.endsWith('/')) {
+            return aPath.substring(0, aPath.length() - 1);
+        }
+
+        return aPath;
+    }
+
+    /**
      * @description RouteEntry 내부 클래스 - 경로와 처리자를 매핑
      */
     private class RouteEntry {
@@ -13,7 +36,7 @@ public class CompositeRouter implements APIRouter {
         Object handler; // APIRouter 또는 APIProcessor
 
         RouteEntry(String aPattern, Object aHandler) {
-            this.pattern = aPattern;
+            this.pattern = normalizePath(aPattern);
             this.handler = aHandler;
         }
 
@@ -23,10 +46,14 @@ public class CompositeRouter implements APIRouter {
          * @return 매칭 여부
          */
         Boolean matches(String aPath) {
+            // 경로 정규화 (trailing slash 제거)
+            String kNormalizedPath = normalizePath(aPath);
+
             System.debug(LoggingLevel.INFO, this.handler.toString().substringBefore(':') +
-                    ', matches() this:' + this.pattern + ', path:' + aPath);
+                    ', matches() this:' + this.pattern + ', path:' + kNormalizedPath);
+
             // 정확한 경로 매칭
-            if (this.pattern == aPath) {
+            if (this.pattern == kNormalizedPath) {
                 return true;
             }
 
@@ -38,11 +65,11 @@ public class CompositeRouter implements APIRouter {
             // 끝에 와일드카드 (예: /api/v1.0/*) - 모든 하위 경로 매칭
             if (this.pattern.endsWith('/*')) {
                 String kPrefix = this.pattern.substring(0, this.pattern.length() - 2);
-                return aPath.startsWith(kPrefix);
+                return kNormalizedPath.startsWith(kPrefix);
             }
 
             // 중간에 와일드카드 (예: /api/v1.0/*/view) - 세그먼트별 매칭
-            return this.matchesWithWildcard(aPath);
+            return this.matchesWithWildcard(kNormalizedPath);
         }
 
         /**

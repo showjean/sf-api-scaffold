@@ -306,6 +306,66 @@ private class CompositeRouter_ts {
         }
     }
 
+    /**
+     * @description Trailing slash 정규화 테스트
+     */
+    @IsTest
+    static void testTrailingSlashNormalization() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users', new TestHealthCheckProcessor());
+
+            // When - trailing slash 있는 경로로 요청
+            APIProcessor kProcessor1 = kRouter.route('/api/users');
+            APIProcessor kProcessor2 = kRouter.route('/api/users/');
+
+            // Then - 둘 다 매칭되어야 함
+            Assert.isNotNull(kProcessor1, 'trailing slash 없는 경로 매칭');
+            Assert.isNotNull(kProcessor2, 'trailing slash 있는 경로도 동일하게 매칭');
+        }
+    }
+
+    /**
+     * @description 루트 경로 정규화 테스트
+     */
+    @IsTest
+    static void testRootPathNormalization() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/', new TestHealthCheckProcessor());
+
+            // When
+            APIProcessor kProcessor1 = kRouter.route('/');
+            APIProcessor kProcessor2 = kRouter.route('');
+
+            // Then
+            Assert.isNotNull(kProcessor1, '루트 경로 / 매칭');
+            Assert.isNotNull(kProcessor2, '빈 문자열도 루트 경로로 매칭');
+        }
+    }
+
+    /**
+     * @description 패턴에 trailing slash가 있는 경우 테스트
+     */
+    @IsTest
+    static void testPatternWithTrailingSlash() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 패턴에 trailing slash
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users/', new TestHealthCheckProcessor());
+
+            // When
+            APIProcessor kProcessor1 = kRouter.route('/api/users');
+            APIProcessor kProcessor2 = kRouter.route('/api/users/');
+
+            // Then - 둘 다 매칭
+            Assert.isNotNull(kProcessor1, '패턴에 trailing slash 있어도 없는 경로와 매칭');
+            Assert.isNotNull(kProcessor2, '패턴에 trailing slash 있고 경로에도 있으면 매칭');
+        }
+    }
+
     class TestHealthCheckProcessor implements APIProcessor {
         /**
          * @description 헬스 체크 요청 처리
