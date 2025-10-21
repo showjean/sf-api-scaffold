@@ -68,6 +68,61 @@ public class PathFinder {
     }
 
     /**
+     * @description Path Variable을 파싱하여 변수명과 값의 매핑을 반환
+     * @param aPattern 패턴 경로 (예: /api/* /:id/:pw)
+     * @param aPath 실제 경로 (예: /api/v1.5/xxx/zzz)
+     * @return 변수명과 값의 매핑 Map (예: {id=xxx, pw=zzz}), 매칭 실패 시 null
+     */
+    public Map<String, String> parsePathVariables(String aPattern, String aPath) {
+        String kNormalizedPattern = this.normalizePath(aPattern);
+        String kNormalizedPath = this.normalizePath(aPath);
+
+        List<String> kPatternSegments = this.splitPath(kNormalizedPattern);
+        List<String> kPathSegments = this.splitPath(kNormalizedPath);
+
+        // 끝 와일드카드가 있는 경우 패턴 세그먼트 수보다 경로 세그먼트가 많아도 됨
+        Boolean kHasTrailingWildcard = !kPatternSegments.isEmpty() &&
+                                        kPatternSegments[kPatternSegments.size() - 1].equals('*');
+
+        if (kHasTrailingWildcard) {
+            if (kPatternSegments.size() - 1 > kPathSegments.size()) {
+                return null;
+            }
+        }
+        else {
+            if (kPatternSegments.size() != kPathSegments.size()) {
+                return null;
+            }
+        }
+
+        Map<String, String> kVariables = new Map<String, String>();
+        Integer kCompareCount = kHasTrailingWildcard ? kPatternSegments.size() - 1 : kPatternSegments.size();
+
+        for (Integer i = 0; i < kCompareCount; i++) {
+            String kPatternSeg = kPatternSegments[i];
+            String kPathSeg = kPathSegments[i];
+
+            // Path Variable (예: :id)
+            if (kPatternSeg.startsWith(':')) {
+                String kVariableName = kPatternSeg.substring(1);
+                kVariables.put(kVariableName, kPathSeg);
+            }
+            // 와일드카드
+            else if (kPatternSeg.equals('*')) {
+                continue;
+            }
+            // 일반 문자열 - 정확히 일치해야 함
+            else {
+                if (!kPatternSeg.equals(kPathSeg)) {
+                    return null;
+                }
+            }
+        }
+
+        return kVariables;
+    }
+
+    /**
      * @description 경로 정규화
      * @param aPath 원본 경로
      * @return 정규화된 경로

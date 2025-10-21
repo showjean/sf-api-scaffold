@@ -313,4 +313,151 @@ private class PathFinder_ts {
             Assert.areEqual('/api/v1.0/users/123/profile', kFinder.matches('/*/users/123/*'), '조합된 와일드카드 - 와일드카드 위치까지');
         }
     }
+
+    /**
+     * @description Path Variable 파싱 기본 테스트
+     */
+    @IsTest
+    static void testParsePathVariablesBasic() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/v1.5/:id/:pw', '/api/v1.5/xxx/zzz');
+
+            // Then
+            Assert.areEqual(2, kVariables.size(), '변수가 2개여야 함');
+            Assert.areEqual('xxx', kVariables.get('id'), 'id 값이 xxx여야 함');
+            Assert.areEqual('zzz', kVariables.get('pw'), 'pw 값이 zzz여야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 와일드카드 조합 테스트
+     */
+    @IsTest
+    static void testParsePathVariablesWithWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/*/:id/:pw', '/api/v1.5/xxx/zzz');
+
+            // Then
+            Assert.areEqual(2, kVariables.size(), '변수가 2개여야 함');
+            Assert.areEqual('xxx', kVariables.get('id'), 'id 값이 xxx여야 함');
+            Assert.areEqual('zzz', kVariables.get('pw'), 'pw 값이 zzz여야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 여러 변수 테스트
+     */
+    @IsTest
+    static void testParsePathVariablesMultiple() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/users/:userId/posts/:postId/comments/:commentId',
+                                                                          '/users/123/posts/456/comments/789');
+
+            // Then
+            Assert.areEqual(3, kVariables.size(), '변수가 3개여야 함');
+            Assert.areEqual('123', kVariables.get('userId'), 'userId 값이 123이어야 함');
+            Assert.areEqual('456', kVariables.get('postId'), 'postId 값이 456이어야 함');
+            Assert.areEqual('789', kVariables.get('commentId'), 'commentId 값이 789이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 실패 케이스 - 세그먼트 개수 불일치
+     */
+    @IsTest
+    static void testParsePathVariablesSegmentMismatch() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw', '/api/xxx');
+
+            // Then
+            Assert.isNull(kVariables, '세그먼트 개수가 다르면 null 반환');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 실패 케이스 - 고정 경로 불일치
+     */
+    @IsTest
+    static void testParsePathVariablesFixedPathMismatch() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw', '/web/xxx/zzz');
+
+            // Then
+            Assert.isNull(kVariables, '고정 경로가 다르면 null 반환');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 끝 와일드카드 테스트
+     */
+    @IsTest
+    static void testParsePathVariablesWithTrailingWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/:version/*', '/api/v1.5/users/123/profile');
+
+            // Then
+            Assert.areEqual(1, kVariables.size(), '변수가 1개여야 함');
+            Assert.areEqual('v1.5', kVariables.get('version'), 'version 값이 v1.5여야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 변수 없는 경우
+     */
+    @IsTest
+    static void testParsePathVariablesNoVariables() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/users/list', '/api/users/list');
+
+            // Then
+            Assert.areEqual(0, kVariables.size(), '변수가 없으면 빈 Map 반환');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - trailing slash 정규화 테스트
+     */
+    @IsTest
+    static void testParsePathVariablesTrailingSlash() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When - trailing slash가 있어도 정상 파싱
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw/', '/api/xxx/zzz/');
+
+            // Then
+            Assert.areEqual(2, kVariables.size(), '변수가 2개여야 함');
+            Assert.areEqual('xxx', kVariables.get('id'), 'id 값이 xxx여야 함');
+            Assert.areEqual('zzz', kVariables.get('pw'), 'pw 값이 zzz여야 함');
+        }
+    }
 }
