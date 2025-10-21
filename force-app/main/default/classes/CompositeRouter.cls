@@ -1,7 +1,8 @@
 /**
- * @description Composite 패턴의 Composite 역할 - 여러 하위 라우터/프로세서를 관리
+ * @description Composite 패턴의 Composite 역할 - 여러 하위 라우터/프로세서를 관리 (상대 경로 지원)
  */
 public class CompositeRouter implements APIRouter {
+    private String prefix;
     private List<RouteEntry> routes;
 
     /**
@@ -22,6 +23,8 @@ public class CompositeRouter implements APIRouter {
          * @return 매칭 여부
          */
         Boolean matches(String aPath) {
+            System.debug(LoggingLevel.INFO, this.handler.toString().substringBefore(':') +
+                    ', matches() this:' + this.pattern + ', path:' + aPath);
             // 정확한 경로 매칭
             if (this.pattern == aPath) {
                 return true;
@@ -74,12 +77,58 @@ public class CompositeRouter implements APIRouter {
 
             return true;
         }
+
+        /**
+         * @description 하위 Router에 전달할 prefix 추출
+         * @return 패턴에서 추출한 prefix
+         */
+        String extractPrefix() {
+            // 끝 와일드카드 패턴 (예: /api/v1.0/*)
+            if (this.pattern.endsWith('/*')) {
+                return this.pattern.substring(0, this.pattern.length() - 2);
+            }
+            // 정확한 경로
+            return this.pattern;
+        }
+
+        /**
+         * @description 경로에서 패턴의 prefix를 제거하여 상대 경로 반환
+         * @param aPath 절대 경로
+         * @return 상대 경로
+         */
+        String toRelativePath(String aPath) {
+            String kPrefix = this.extractPrefix();
+
+            if (aPath.startsWith(kPrefix)) {
+                String kRelativePath = aPath.substring(kPrefix.length());
+                // prefix 제거 후 빈 문자열이면 '/'로 변환
+                if (String.isBlank(kRelativePath)) {
+                    return '/';
+                }
+                // '/'로 시작하지 않으면 추가
+                if (!kRelativePath.startsWith('/')) {
+                    return '/' + kRelativePath;
+                }
+                return kRelativePath;
+            }
+
+            return aPath;
+        }
     }
 
     /**
-     * @description 기본 생성자
+     * @description 기본 생성자 (하위 호환성)
      */
     public CompositeRouter() {
+        this('');
+    }
+
+    /**
+     * @description Prefix를 지정하는 생성자
+     * @param aPrefix 이 라우터가 처리할 경로의 prefix (예: '/api/v1.0')
+     */
+    public CompositeRouter(String aPrefix) {
+        this.prefix = aPrefix;
         this.routes = new List<RouteEntry>();
     }
 
@@ -111,11 +160,16 @@ public class CompositeRouter implements APIRouter {
      * @return 매칭된 APIProcessor
      */
     public APIProcessor route(String aPath) {
+        // prefix 제거하여 상대 경로로 변환
+        String kRelativePath = this.removePrefix(aPath);
+        System.debug(LoggingLevel.INFO, 'Path: ' + aPath + ', Relative Path => ' + kRelativePath);
+
         for (RouteEntry kEntry : this.routes) {
-            if (kEntry.matches(aPath)) {
-                // Composite인 경우 재귀적으로 route() 호출
+            if (kEntry.matches(kRelativePath)) {
+                // Composite인 경우 재귀적으로 route() 호출 (상대 경로 전달)
                 if (kEntry.handler instanceof APIRouter) {
-                    return ((APIRouter)kEntry.handler).route(aPath);
+                    String kSubPath = kEntry.toRelativePath(kRelativePath);
+                    return ((APIRouter)kEntry.handler).route(kSubPath);
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
@@ -124,5 +178,31 @@ public class CompositeRouter implements APIRouter {
             }
         }
         return null;
+    }
+
+    /**
+     * @description 경로에서 prefix 제거
+     * @param aPath 절대 경로
+     * @return prefix가 제거된 상대 경로
+     */
+    private String removePrefix(String aPath) {
+        if (String.isBlank(this.prefix)) {
+            return aPath;
+        }
+
+        if (aPath.startsWith(this.prefix)) {
+            String kRelativePath = aPath.substring(this.prefix.length());
+            // prefix 제거 후 빈 문자열이면 '/'로 변환
+            if (String.isBlank(kRelativePath)) {
+                return '/';
+            }
+            // '/'로 시작하지 않으면 추가
+            if (!kRelativePath.startsWith('/')) {
+                return '/' + kRelativePath;
+            }
+            return kRelativePath;
+        }
+
+        return aPath;
     }
 }

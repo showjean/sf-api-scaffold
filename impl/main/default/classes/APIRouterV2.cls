@@ -13,14 +13,14 @@ public class APIRouterV2 implements APIRouter {
     }
 
     /**
-     * @description 라우트 초기화
+     * @description 라우트 초기화 (상대 경로 사용)
      */
     private void initializeRoutes() {
-        // v2.0용 헬스 체크
-        this.compositeRouter.addProcessor('/api/v2.0/health', new HealthCheckProcessor());
+        // 헬스 체크 엔드포인트 (상대 경로) - 재사용 가능
+        this.compositeRouter.addProcessor('/health', new HealthCheckProcessor());
 
-        // v2.0 추가 라우트
-        // this.compositeRouter.addProcessor('/api/v2.0/status', new StatusProcessor());
+        // 추가 라우트 (상대 경로 사용)
+        // this.compositeRouter.addProcessor('/status', new StatusProcessor());
     }
 
     /**

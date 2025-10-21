@@ -3,6 +3,10 @@
     {
       "path": "force-app",
       "default": true
+    },
+    {
+      "path": "impl",
+      "default": false
     }
   ],
   "name": "sf-api-scaffold",

@@ -150,7 +150,7 @@ private class APIScaffold_ts {
             // Given - 예외를 던지는 Mock Processor
             MockErrorProcessor kErrorProcessor = new MockErrorProcessor();
             CompositeRouter kRouter = new CompositeRouter();
-            kRouter.addProcessor('/api/v1.0/error', kErrorProcessor);
+            kRouter.addProcessor('/error', kErrorProcessor);
 
             APIScaffold kScaffold = APIScaffold.create()
                 .route('/api/v1.0/*', kRouter)
@@ -201,11 +201,11 @@ private class APIScaffold_ts {
          */
         private void initializeRoutes() {
             // 헬스 체크 엔드포인트
-            this.compositeRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
+            this.compositeRouter.addProcessor('/health', new TestHealthCheckProcessor());
 
             // 추가 라우트는 여기에 등록
-            // this.compositeRouter.addProcessor('/api/v1.0/users', new UserListProcessor());
-            // this.compositeRouter.addRouter('/api/v1.0/users/*', new UserRouter());
+            // this.compositeRouter.addProcessor('/users', new UserListProcessor());
+            // this.compositeRouter.addRouter('/users/*', new UserRouter());
         }
 
         /**
@@ -234,10 +234,10 @@ private class APIScaffold_ts {
          */
         private void initializeRoutes() {
             // v2.0용 헬스 체크
-            this.compositeRouter.addProcessor('/api/v2.0/health', new TestHealthCheckProcessor());
+            this.compositeRouter.addProcessor('/health', new TestHealthCheckProcessor());
 
             // v2.0 추가 라우트
-            // this.compositeRouter.addProcessor('/api/v2.0/status', new StatusProcessor());
+            // this.compositeRouter.addProcessor('/status', new StatusProcessor());
         }
 
         /**

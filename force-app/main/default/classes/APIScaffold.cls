@@ -10,7 +10,7 @@ public class APIScaffold {
      * @description 기본 생성자 (private)
      */
     private APIScaffold() {
-        this.router = new CompositeRouter();
+        this.router = new CompositeRouter('');
     }
 
     /**
@@ -51,6 +51,7 @@ public class APIScaffold {
     public void process(RestRequest aReq, RestResponse aRes) {
         try {
             String kPath = aReq.requestURI;
+            System.debug(LoggingLevel.INFO, '⭐️requestURI: ' + kPath);
             APIProcessor kProcessor = this.router.route(kPath);
 
             if (kProcessor != null) {

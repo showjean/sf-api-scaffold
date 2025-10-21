@@ -51,7 +51,7 @@ private class CompositeRouter_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 하위 라우터 생성
             CompositeRouter kSubRouter = new CompositeRouter();
-            kSubRouter.addProcessor('/api/users/list', new TestHealthCheckProcessor());
+            kSubRouter.addProcessor('/list', new TestHealthCheckProcessor());
 
             // Given - 상위 라우터에 하위 라우터 등록
             CompositeRouter kMainRouter = new CompositeRouter();
@@ -216,6 +216,96 @@ private class CompositeRouter_ts {
         }
     }
     
+    /**
+     * @description 상대 경로 처리 테스트 - Router 재사용
+     */
+    @IsTest
+    static void testRelativePathRouting() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 상대 경로로 등록된 하위 라우터
+            CompositeRouter kSubRouter = new CompositeRouter('/api/v1.0');
+            kSubRouter.addProcessor('/health', new TestHealthCheckProcessor());
+            kSubRouter.addProcessor('/status', new TestHealthCheckProcessor());
+
+            // When - 절대 경로로 요청
+            APIProcessor kProcessor1 = kSubRouter.route('/api/v1.0/health');
+            APIProcessor kProcessor2 = kSubRouter.route('/api/v1.0/status');
+
+            // Then
+            Assert.isNotNull(kProcessor1, 'prefix가 제거된 상대 경로로 매칭되어야 함');
+            Assert.isNotNull(kProcessor2, '다른 상대 경로도 매칭되어야 함');
+        }
+    }
+
+    /**
+     * @description Router 재사용 테스트 - 같은 라우터를 다른 prefix에 등록
+     */
+    @IsTest
+    static void testRouterReusability() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 재사용 가능한 라우터 (상대 경로로 등록)
+            CompositeRouter kReusableRouter = new CompositeRouter();
+            kReusableRouter.addProcessor('/health', new TestHealthCheckProcessor());
+
+            // Given - v1.0과 v2.0에 같은 라우터 사용
+            CompositeRouter kV1Router = new CompositeRouter('/api/v1.0');
+            kV1Router.addRouter('/sub/*', kReusableRouter);
+
+            CompositeRouter kV2Router = new CompositeRouter('/api/v2.0');
+            kV2Router.addRouter('/sub/*', kReusableRouter);
+
+            // When
+            APIProcessor kV1Processor = kV1Router.route('/api/v1.0/sub/health');
+            APIProcessor kV2Processor = kV2Router.route('/api/v2.0/sub/health');
+
+            // Then - 같은 라우터가 다른 경로에서 재사용됨
+            Assert.isNotNull(kV1Processor, 'v1.0 경로에서 작동해야 함');
+            Assert.isNotNull(kV2Processor, 'v2.0 경로에서 작동해야 함');
+        }
+    }
+
+    /**
+     * @description Prefix 없는 라우터 동작 테스트 (하위 호환성)
+     */
+    @IsTest
+    static void testNoPrefix() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - prefix 없이 생성 (기존 방식)
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/health', new TestHealthCheckProcessor());
+
+            // When
+            APIProcessor kProcessor = kRouter.route('/api/health');
+
+            // Then
+            Assert.isNotNull(kProcessor, 'prefix 없이도 정상 작동해야 함');
+        }
+    }
+
+    /**
+     * @description 중첩된 상대 경로 테스트
+     */
+    @IsTest
+    static void testNestedRelativePath() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 3단계 중첩 라우터
+            CompositeRouter kLeafRouter = new CompositeRouter();
+            kLeafRouter.addProcessor('/view', new TestHealthCheckProcessor());
+
+            CompositeRouter kMiddleRouter = new CompositeRouter('/api/v1.0');
+            kMiddleRouter.addRouter('/users/*', kLeafRouter);
+
+            CompositeRouter kRootRouter = new CompositeRouter('');
+            kRootRouter.addRouter('/api/v1.0/*', kMiddleRouter);
+
+            // When - 절대 경로 요청
+            APIProcessor kProcessor = kRootRouter.route('/api/v1.0/users/view');
+
+            // Then
+            Assert.isNotNull(kProcessor, '중첩된 상대 경로가 정상 작동해야 함');
+        }
+    }
+
     class TestHealthCheckProcessor implements APIProcessor {
         /**
          * @description 헬스 체크 요청 처리
