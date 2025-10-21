@@ -174,7 +174,7 @@ private class APIScaffold_ts {
      * @description Mock Processor - 에러를 발생시킴
      */
     private class MockErrorProcessor implements APIProcessor {
-        public void process(RestRequest aReq, RestResponse aRes) {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             throw new CustomException('Test error');
         }
     }
@@ -212,9 +212,9 @@ private class APIScaffold_ts {
          * @description APIRouter 인터페이스 구현
          * @param aPrevPath 지나온 경로
          * @param aPath 요청 경로
-         * @return 매칭된 APIProcessor
+         * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
          */
-        public APIProcessor route(String aPrevPath, String aPath) {
+        public APIContext route(String aPrevPath, String aPath) {
             return this.compositeRouter.route(aPrevPath, aPath);
         }
     }
@@ -245,9 +245,9 @@ private class APIScaffold_ts {
          * @description APIRouter 인터페이스 구현
          * @param aPrevPath 지나온 경로
          * @param aPath 요청 경로
-         * @return 매칭된 APIProcessor
+         * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
          */
-        public APIProcessor route(String aPrevPath, String aPath) {
+        public APIContext route(String aPrevPath, String aPath) {
             return this.compositeRouter.route(aPrevPath, aPath);
         }
     }
@@ -255,10 +255,11 @@ private class APIScaffold_ts {
     class TestHealthCheckProcessor implements APIProcessor {
         /**
          * @description 헬스 체크 요청 처리
+         * @param aContext APIContext 객체
          * @param aReq RestRequest 객체
          * @param aRes RestResponse 객체
          */
-        public void process(RestRequest aReq, RestResponse aRes) {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                     'status' => 'healthy',
                     'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),

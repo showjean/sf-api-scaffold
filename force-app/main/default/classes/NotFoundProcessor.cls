@@ -4,10 +4,11 @@
 public class NotFoundProcessor implements APIProcessor {
     /**
      * @description 404 응답 생성
+     * @param aContext APIContext 객체
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
      */
-    public void process(RestRequest aReq, RestResponse aRes) {
+    public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
         Map<String, String> kResponse = new Map<String, String>{
             'error' => 'Not Found',
             'message' => 'The requested resource was not found',

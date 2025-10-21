@@ -56,11 +56,13 @@ public class APIScaffold {
         try {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
-            APIProcessor kProcessor = this.router.route(this.mainPath, kPath);
+            APIContext kContext = this.router.route(this.mainPath, kPath);
+            APIProcessor kProcessor = kContext.processor;
 
             if (kProcessor != null) {
                 System.debug(LoggingLevel.INFO, '✅Processor -> ' + kProcessor.toString().substringBefore(':'));
-                kProcessor.process(aReq, aRes);
+                System.debug(LoggingLevel.INFO, 'Context -> ' + kContext);
+                kProcessor.process(kContext, aReq, aRes);
             }
             else {
                 // 매칭되는 경로가 없는 경우

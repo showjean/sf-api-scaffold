@@ -65,3 +65,7 @@ new PathFinder('/api', '/api/v1.0/health').matches('/*/');
 이라면, '/api/v1.0/health' 여기에서, 이만큼('/api/v1.0/') 이 일치하니까 '/api/v1.0/' 을 반환하라고. 
 
 중간 와일드카드도 일치하는 부분까지만 반환하도록 못해?
+
+# 9 
+Path Variable 을 파싱하는 메서드를 하나 만들어줘. '/api/v1.5/xxx/zzz' 와 '/api/*/:id/:pw' 처럼 동일한 구조의 url 과 패턴이 주어지면
+id = 'xxx', pw = 'zzz' 의 맵핑 값을 갖는 Map 을 반환하도록.

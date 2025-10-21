@@ -17,7 +17,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             Assert.areEqual(404, kRes.statusCode, '404 상태 코드를 반환해야 함');
@@ -37,7 +37,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             Assert.isNotNull(kRes.responseBody, 'Response body가 있어야 함');
@@ -65,7 +65,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -88,7 +88,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             Map<String, String> kHeaders = kRes.headers;
@@ -110,7 +110,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -142,7 +142,7 @@ private class NotFoundProcessor_ts {
                 kReq.requestURI = kPath;
                 RestResponse kRes = new RestResponse();
 
-                kProcessor.process(kReq, kRes);
+                kProcessor.process(new APIContext(), kReq, kRes);
 
                 Assert.areEqual(404, kRes.statusCode, kPath + '는 404를 반환해야 함');
 
@@ -166,7 +166,7 @@ private class NotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(kReq, kRes);
+            kProcessor.process(new APIContext(), kReq, kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();

@@ -9,10 +9,11 @@ public class HealthCheckProcessor implements APIProcessor {
 
     /**
      * @description 헬스 체크 요청 처리
+     * @param aContext APIContext 객체
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
      */
-    public void process(RestRequest aReq, RestResponse aRes) {
+    public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
         Map<String, Object> kResponse = new Map<String, Object>{
             'status' => this.label ?? 'healthy',
             'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),

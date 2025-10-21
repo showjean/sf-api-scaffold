@@ -17,7 +17,7 @@ public class APIRouterV1 implements APIRouter {
      */
     private void initializeRoutes() {
         // 헬스 체크 엔드포인트 (상대 경로)
-        this.compositeRouter.addProcessor('/', new HealthCheckProcessor('root'));
+        this.compositeRouter.addProcessor('/:id/:pw', new HealthCheckProcessor('root'));
         this.compositeRouter.addProcessor('/health', new HealthCheckProcessor('health'));
         this.compositeRouter.addProcessor('/*', new HealthCheckProcessor('***'));
 
@@ -33,9 +33,9 @@ public class APIRouterV1 implements APIRouter {
      * @description APIRouter 인터페이스 구현
      * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
-     * @return 매칭된 APIProcessor
+     * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
      */
-    public APIProcessor route(String aPrevPath, String aPath) {
+    public APIContext route(String aPrevPath, String aPath) {
         return this.compositeRouter.route(aPrevPath, aPath);
     }
 }

@@ -46,8 +46,8 @@ public class CompositeRouter implements APIRouter {
          * @return 매칭 여부
          */
         Boolean matches(String aPrevPath, String aPath) {
-//            System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
-//                    ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
+            System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
+                    ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
 
             String kNormalizedPath = normalizePath(aPath);
             // PathFinder를 사용하여 매칭 확인
@@ -102,9 +102,9 @@ public class CompositeRouter implements APIRouter {
      * @description APIRouter 인터페이스 구현 - 경로에 맞는 Processor 반환
      * @param aPrevPath 지나온 경로
      * @param aPath 요청 경로
-     * @return 매칭된 APIProcessor
+     * @return 매칭 결과 APIContext, 매칭 Processor가 없으면 APIContext.processor = null 로 반환
      */
-    public APIProcessor route(String aPrevPath, String aPath) {
+    public APIContext route(String aPrevPath, String aPath) {
 //        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
 
         PathFinder kPathFinder = new PathFinder('', '');
@@ -112,29 +112,37 @@ public class CompositeRouter implements APIRouter {
 
         for (RouteEntry kEntry : this.routes) {
             if (kEntry.matches(kEffectivePrevPath, aPath)) {
-                // 새로운 prevPath 계산: 와일드카드 패턴은 /* 제거
-                String kNewPrevPath;
-                if (kEntry.pattern.endsWith('/*')) {
-                    // 중첩 라우팅을 위해 trailing /* 제거
-                    String kPatternWithoutWildcard = kEntry.pattern.substring(0, kEntry.pattern.length() - 2);
-                    kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kPatternWithoutWildcard);
-                } else {
-                    kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
-                }
-
                 // Composite인 경우 재귀적으로 route() 호출
                 if (kEntry.handler instanceof APIRouter) {
-                    APIProcessor kProcessor = ((APIRouter) kEntry.handler).route(kNewPrevPath, aPath);
-                    if (null != kProcessor) {
-                        return kProcessor;
+                    // 새로운 prevPath 계산: 와일드카드 패턴은 /* 제거
+                    String kNewPrevPath;
+                    if (kEntry.pattern.endsWith('/*')) {
+                        // 중첩 라우팅을 위해 trailing /* 제거
+                        String kPatternWithoutWildcard = kEntry.pattern.substring(0, kEntry.pattern.length() - 2);
+                        kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kPatternWithoutWildcard);
+                    } else {
+                        kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
+                    }
+
+                    APIContext kContext = ((APIRouter) kEntry.handler).route(kNewPrevPath, aPath);
+                    if (null != kContext) {
+                        return kContext;
                     }
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
-                    return (APIProcessor) kEntry.handler;
+                    APIContext kContext = new APIContext();
+                    kContext.processor = (APIProcessor) kEntry.handler;
+                    kContext.pattern = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
+                    kContext.requestUrl = aPath;
+                    kContext.pathVar = kPathFinder.parsePathVariables(kContext.pattern, aPath);
+                    System.debug(LoggingLevel.INFO, 'Pattern: ' + kContext.pattern);
+                    System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
+                    
+                    return kContext;
                 }
             }
         }
-        return null;
+        return new APIContext();
     }
 }
