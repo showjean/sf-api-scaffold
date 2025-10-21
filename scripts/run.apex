@@ -1,6 +1,7 @@
 RestRequest kReq = new RestRequest();
 RestResponse kRes = new RestResponse();
-kReq.requestURI = '/api/v1.0/';
+kReq.requestURI = '/api/v1.0/users/status';
+//kReq.requestURI = '/api/v2.0/status';
 
 APIScaffold.create('/api')
         .route('/*/*', new APIRouterV1())

@@ -54,7 +54,7 @@ public class CompositeRouter implements APIRouter {
             PathFinder kFinder = new PathFinder(aPrevPath, kNormalizedPath);
             String kResult = kFinder.matches(this.pattern);
             System.debug(LoggingLevel.INFO, 'Result: ' + kResult);
-            
+
             // todo refactoring
             // Composite인 경우 재귀적으로 route() 호출
             if (this.handler instanceof APIRouter) {
@@ -118,18 +118,20 @@ public class CompositeRouter implements APIRouter {
                     // 중첩 라우팅을 위해 trailing /* 제거
                     String kPatternWithoutWildcard = kEntry.pattern.substring(0, kEntry.pattern.length() - 2);
                     kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kPatternWithoutWildcard);
-                }
-                else {
+                } else {
                     kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
                 }
 
                 // Composite인 경우 재귀적으로 route() 호출
                 if (kEntry.handler instanceof APIRouter) {
-                    return ((APIRouter)kEntry.handler).route(kNewPrevPath, aPath);
+                    APIProcessor kProcessor = ((APIRouter) kEntry.handler).route(kNewPrevPath, aPath);
+                    if (null != kProcessor) {
+                        return kProcessor;
+                    }
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
-                    return (APIProcessor)kEntry.handler;
+                    return (APIProcessor) kEntry.handler;
                 }
             }
         }

@@ -24,7 +24,7 @@ public class PathFinder {
         String kNormalizedNext = this.normalizePath(aNextPath);
         String kCombinedPath = this.combine(this.prevPath, kNormalizedNext);
 
-        System.debug(LoggingLevel.INFO, 'PathFinder.find() - Combined: ' + kCombinedPath + ', Origin: ' + this.originPath);
+        System.debug(LoggingLevel.DEBUG, 'PathFinder.matches() - Combined: ' + kCombinedPath + ', Origin: ' + this.originPath);
 
         // 와일드카드 패턴 매칭
         if (kCombinedPath.contains('*')) {
