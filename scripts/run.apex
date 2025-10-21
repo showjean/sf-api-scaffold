@@ -4,7 +4,8 @@ kReq.requestURI = '/api/v1.0/users/status';
 //kReq.requestURI = '/api/v2.0/status';
 
 APIScaffold.create('/api')
-        .route('/*/*', new APIRouterV1())
+        .route('/v1.0/*', new APIRouterV1())
+        .route('/v1.5/*', new APIRouterV1())
         .route('/v2.0/*', new APIRouterV2())
         .process(kReq, kRes);
 

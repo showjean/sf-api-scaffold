@@ -46,23 +46,23 @@ public class CompositeRouter implements APIRouter {
          * @return 매칭 여부
          */
         Boolean matches(String aPrevPath, String aPath) {
-            System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
-                    ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
+//            System.debug(LoggingLevel.DEBUG, this.handler.toString().substringBefore(':') +
+//                    ', matches() prevPath:' + aPrevPath + ', pattern:' + this.pattern + ', path:' + aPath);
 
             String kNormalizedPath = normalizePath(aPath);
             // PathFinder를 사용하여 매칭 확인
             PathFinder kFinder = new PathFinder(aPrevPath, kNormalizedPath);
             String kResult = kFinder.matches(this.pattern);
-            System.debug(LoggingLevel.INFO, 'Result: ' + kResult);
-
-            // todo refactoring
-            // Composite인 경우 재귀적으로 route() 호출
-            if (this.handler instanceof APIRouter) {
-                return String.isNotBlank(kResult);
-            }
-            // Leaf인 경우 Processor 직접 반환
-            else if (this.handler instanceof APIProcessor) {
-                return kResult == kNormalizedPath;
+            if (String.isNotBlank(kResult)) {
+                System.debug(LoggingLevel.INFO, '✔' +this.handler.toString().substringBefore(':') + ' => ' + kResult);
+                // Composite인 경우 경로만 포함되도 매칭되는 것
+                if (this.handler instanceof APIRouter) {
+                    return true;
+                }
+                // Leaf인 경우 최종 경로와 동일해야 매칭
+                else if (this.handler instanceof APIProcessor) {
+                    return kResult == kNormalizedPath;
+                }
             }
             return false;
         }
@@ -105,7 +105,7 @@ public class CompositeRouter implements APIRouter {
      * @return 매칭된 APIProcessor
      */
     public APIProcessor route(String aPrevPath, String aPath) {
-        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
+//        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
 
         PathFinder kPathFinder = new PathFinder('', '');
         String kEffectivePrevPath = aPrevPath;

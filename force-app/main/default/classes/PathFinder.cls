@@ -24,7 +24,7 @@ public class PathFinder {
         String kNormalizedNext = this.normalizePath(aNextPath);
         String kCombinedPath = this.combine(this.prevPath, kNormalizedNext);
 
-        System.debug(LoggingLevel.DEBUG, 'PathFinder.matches() - Combined: ' + kCombinedPath + ', Origin: ' + this.originPath);
+//        System.debug(LoggingLevel.DEBUG, 'PathFinder.matches() - Combined: ' + kCombinedPath + ', Origin: ' + this.originPath);
 
         // 와일드카드 패턴 매칭
         if (kCombinedPath.contains('*')) {
@@ -133,8 +133,8 @@ public class PathFinder {
             }
         }
         else {
-            // 중간 와일드카드는 정확한 세그먼트 개수 필요
-            if (kPatternSegments.size() != kPathSegments.size()) {
+            // 중간 와일드카드는 패턴 세그먼트 개수만큼 필요
+            if (kPatternSegments.size() > kPathSegments.size()) {
                 return null;
             }
 

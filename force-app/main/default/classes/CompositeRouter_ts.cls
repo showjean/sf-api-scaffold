@@ -39,7 +39,7 @@ private class CompositeRouter_ts {
 
             // Then
             Assert.isNotNull(kProcessor1, '와일드카드 매칭이 되어야 함');
-            Assert.isNotNull(kProcessor2, '와일드카드는 모든 하위 경로와 매칭되어야 함');
+            Assert.isNull(kProcessor2, '프로세서는 전체 경로와 일치해야 매칭');
         }
     }
 
@@ -201,8 +201,8 @@ private class CompositeRouter_ts {
 
             // Then
             Assert.isNotNull(kProcessor1, '끝 와일드카드 - 1단계');
-            Assert.isNotNull(kProcessor2, '끝 와일드카드 - 2단계');
-            Assert.isNotNull(kProcessor3, '끝 와일드카드 - 3단계');
+            Assert.isNull(kProcessor2, '끝 와일드카드 - 2단계 - 프로세서 최종 경로 불일치');
+            Assert.isNull(kProcessor3, '끝 와일드카드 - 3단계 - 프로세서 최종 경로 불일치');
 
             // When - 중간 와일드카드는 정확한 세그먼트 개수만 매칭
             APIProcessor kProcessor4 = kRouter.route('', '/api/orders/123/view');
@@ -385,4 +385,37 @@ private class CompositeRouter_ts {
         }
     }
 
+    class TestAPIRouterV1 implements APIRouter {
+        private CompositeRouter compositeRouter;
+
+        /**
+         * @description 생성자 - 라우트 초기화
+         */
+        public TestAPIRouterV1() {
+            this.compositeRouter = new CompositeRouter();
+            this.initializeRoutes();
+        }
+
+        /**
+         * @description 라우트 초기화
+         */
+        private void initializeRoutes() {
+            // 헬스 체크 엔드포인트
+            this.compositeRouter.addProcessor('/', new TestHealthCheckProcessor());
+
+            // 추가 라우트는 여기에 등록
+            // this.compositeRouter.addProcessor('/users', new UserListProcessor());
+            // this.compositeRouter.addRouter('/users/*', new UserRouter());
+        }
+
+        /**
+         * @description APIRouter 인터페이스 구현
+         * @param aPrevPath 지나온 경로
+         * @param aPath 요청 경로
+         * @return 매칭된 APIProcessor
+         */
+        public APIProcessor route(String aPrevPath, String aPath) {
+            return this.compositeRouter.route(aPrevPath, aPath);
+        }
+    }
 }
