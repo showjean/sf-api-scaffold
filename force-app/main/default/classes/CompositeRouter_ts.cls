@@ -366,6 +366,175 @@ private class CompositeRouter_ts {
         }
     }
 
+    /**
+     * @description Path Variable 파싱 기본 테스트
+     */
+    @IsTest
+    static void testPathVariableParsing() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/:version/:id', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/api/v1.5/123');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.isNotNull(kContext.pathVar, 'pathVar가 설정되어야 함');
+            Assert.areEqual(2, kContext.pathVar.size(), '변수가 2개여야 함');
+            Assert.areEqual('v1.5', kContext.pathVar.get('version'), 'version 값이 v1.5여야 함');
+            Assert.areEqual('123', kContext.pathVar.get('id'), 'id 값이 123이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 와일드카드 조합 테스트
+     */
+    @IsTest
+    static void testPathVariableWithWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/*/:id/:pw', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/api/v1.5/xxx/zzz');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.isNotNull(kContext.pathVar, 'pathVar가 설정되어야 함');
+            Assert.areEqual(2, kContext.pathVar.size(), '변수가 2개여야 함');
+            Assert.areEqual('xxx', kContext.pathVar.get('id'), 'id 값이 xxx여야 함');
+            Assert.areEqual('zzz', kContext.pathVar.get('pw'), 'pw 값이 zzz여야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 여러 변수 테스트
+     */
+    @IsTest
+    static void testMultiplePathVariables() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/users/:userId/posts/:postId/comments/:commentId', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/users/123/posts/456/comments/789');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.areEqual(3, kContext.pathVar.size(), '변수가 3개여야 함');
+            Assert.areEqual('123', kContext.pathVar.get('userId'), 'userId 값이 123이어야 함');
+            Assert.areEqual('456', kContext.pathVar.get('postId'), 'postId 값이 456이어야 함');
+            Assert.areEqual('789', kContext.pathVar.get('commentId'), 'commentId 값이 789이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 변수 없는 경우
+     */
+    @IsTest
+    static void testNoPathVariables() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users/list', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/api/users/list');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.isNotNull(kContext.pathVar, 'pathVar는 null이 아니어야 함');
+            Assert.areEqual(0, kContext.pathVar.size(), '변수가 없으면 빈 Map이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 중첩 라우터에서 테스트
+     */
+    @IsTest
+    static void testPathVariableInNestedRouter() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kSubRouter = new CompositeRouter();
+            kSubRouter.addProcessor('/:id/view', new TestHealthCheckProcessor());
+
+            CompositeRouter kMainRouter = new CompositeRouter();
+            kMainRouter.addRouter('/api/users/*', kSubRouter);
+
+            // When
+            APIContext kContext = kMainRouter.route('', '/api/users/123/view');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.isNotNull(kContext.pathVar, 'pathVar가 설정되어야 함');
+            Assert.areEqual(1, kContext.pathVar.size(), '변수가 1개여야 함');
+            Assert.areEqual('123', kContext.pathVar.get('id'), 'id 값이 123이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 끝 와일드카드 조합 테스트
+     */
+    @IsTest
+    static void testPathVariableWithTrailingWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/:version/*', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/api/v2.0/users');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.isNotNull(kContext.pathVar, 'pathVar가 설정되어야 함');
+            Assert.areEqual(1, kContext.pathVar.size(), '변수가 1개여야 함');
+            Assert.areEqual('v2.0', kContext.pathVar.get('version'), 'version 값이 v2.0이어야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable 파싱 - 패턴과 경로 구조 불일치
+     */
+    @IsTest
+    static void testPathVariablePatternMismatch() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/:id/:name', new TestHealthCheckProcessor());
+
+            // When - 세그먼트 개수가 다름
+            APIContext kContext = kRouter.route('', '/api/123');
+
+            // Then
+            Assert.isNull(kContext.processor, '패턴이 맞지 않으면 매칭되지 않아야 함');
+        }
+    }
+
+    /**
+     * @description Path Variable과 고정 경로 혼합 테스트
+     */
+    @IsTest
+    static void testPathVariableWithFixedSegments() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/v1.0/users/:userId/profile', new TestHealthCheckProcessor());
+
+            // When
+            APIContext kContext = kRouter.route('', '/api/v1.0/users/456/profile');
+
+            // Then
+            Assert.isNotNull(kContext.processor, 'Processor를 찾아야 함');
+            Assert.areEqual(1, kContext.pathVar.size(), '변수가 1개여야 함');
+            Assert.areEqual('456', kContext.pathVar.get('userId'), 'userId 값이 456이어야 함');
+        }
+    }
+
     class TestHealthCheckProcessor implements APIProcessor {
         /**
          * @description 헬스 체크 요청 처리
@@ -417,6 +586,26 @@ private class CompositeRouter_ts {
          */
         public APIContext route(String aPrevPath, String aPath) {
             return this.compositeRouter.route(aPrevPath, aPath);
+        }
+    }
+
+    class NotFoundProcessor implements APIProcessor {
+        /**
+         * @description 404 Not Found 응답 처리
+         * @param aContext APIContext 객체
+         * @param aReq RestRequest 객체
+         * @param aRes RestResponse 객체
+         */
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            Map<String, Object> kResponse = new Map<String, Object>{
+                    'error' => 'Not Found',
+                    'message' => 'The requested resource was not found',
+                    'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')
+            };
+
+            aRes.statusCode = 404;
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            aRes.addHeader('Content-Type', 'application/json');
         }
     }
 }
