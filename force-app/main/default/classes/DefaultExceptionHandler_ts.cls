@@ -5,7 +5,7 @@
 private class DefaultExceptionHandler_ts {
 
     /**
-     * @description RouteNotFoundException 처리 테스트 - 404 반환
+     * @description ScaffoldException 처리 테스트 - 404 반환
      */
     @IsTest
     static void testRouteNotFoundExceptionHandling() {
@@ -13,7 +13,7 @@ private class DefaultExceptionHandler_ts {
             // Given
             DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
-            APIScaffold.RouteNotFoundException kEx = new APIScaffold.RouteNotFoundException('Route not found');
+            APIScaffold.ScaffoldException kEx = new APIScaffold.ScaffoldException('Route not found').statusCode(404);
 
             // When
             kHandler.handle(kEx, kRes);

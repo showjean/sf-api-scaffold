@@ -86,7 +86,7 @@ public class APIScaffold {
             }
             else {
                 // 매칭되는 경로가 없는 경우
-                throw new RouteNotFoundException('No matching route found for: ' + kPath);
+                throw new ScaffoldException('No matching route found for: ' + kPath).statusCode(404);
             }
         }
         catch (Exception kEx) {
@@ -117,6 +117,12 @@ public class APIScaffold {
     /**
      * @description 경로를 찾을 수 없을 때 발생하는 예외
      */
-    public class RouteNotFoundException extends Exception {
+    public class ScaffoldException extends Exception {
+        public Integer statusCode {get; private set;}
+
+        public ScaffoldException statusCode(Integer aStatusCode) {
+            this.statusCode = aStatusCode;
+            return this;
+        }
     }
 }

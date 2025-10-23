@@ -14,9 +14,9 @@ public class DefaultExceptionHandler implements APIExceptionHandler {
         Integer kStatusCode = 500;
         String kErrorType = aEx.getTypeName();
 
-        // RouteNotFoundException은 404로 처리
-        if (kErrorType == 'APIScaffold.RouteNotFoundException') {
-            kStatusCode = 404;
+        // ScaffoldException statusCode 사용
+        if (kErrorType == 'APIScaffold.ScaffoldException') {
+            kStatusCode = ((APIScaffold.ScaffoldException)aEx).statusCode ?? kStatusCode;
         }
 
         Map<String, Object> kErrorResponse = new Map<String, Object>{
