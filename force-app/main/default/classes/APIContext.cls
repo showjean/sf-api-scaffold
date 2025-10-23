@@ -7,4 +7,5 @@ public class APIContext {
     public APIProcessor processor;    
     public String pattern;
     public String requestUrl;
+    public String httpMethod;
 }

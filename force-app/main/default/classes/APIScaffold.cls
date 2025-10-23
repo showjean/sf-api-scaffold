@@ -38,6 +38,18 @@ public class APIScaffold {
     }
 
     /**
+     * @description 경로 등록 (체이닝)
+     * @param aPattern 경로 패턴 (예: '/api/v1.0/*')
+     * @param aHttpMethod Http Method
+     * @param aRouter APIRouter 구현체
+     * @return APIScaffold 인스턴스 (체이닝용)
+     */
+    public APIScaffold route(String aPattern, String aHttpMethod, APIRouter aRouter) {
+        this.router.addRouter(aPattern, aHttpMethod, aRouter);
+        return this;
+    }
+
+    /**
      * @description 예외 핸들러 설정
      * @param aHandler APIExceptionHandler 구현체
      * @return APIScaffold 인스턴스 (체이닝용)
@@ -56,7 +68,14 @@ public class APIScaffold {
         try {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
-            APIContext kContext = this.router.route(new APIContext(), this.mainPath, kPath);
+
+            APIContext kContext = new APIContext();
+            kContext.pattern = '';
+            kContext.requestUrl = kPath;
+            kContext.httpMethod = aReq.httpMethod;
+            kContext.processor = null;
+            
+            kContext = this.router.route(kContext, this.mainPath, kPath);
             APIProcessor kProcessor = kContext.processor;
 
             if (kProcessor != null) {

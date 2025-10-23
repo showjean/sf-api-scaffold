@@ -32,11 +32,17 @@ public class CompositeRouter implements APIRouter {
      */
     private class RouteEntry {
         final String pattern;
+        final String httpMethod;
         final Object handler; // APIRouter 또는 APIProcessor
 
-        RouteEntry(String aPattern, Object aHandler) {
+        RouteEntry(String aPattern, String aHttpMethod, Object aHandler) {
             this.pattern = normalizePath(aPattern);
+            this.httpMethod = aHttpMethod;
             this.handler = aHandler;
+        }
+        
+        RouteEntry(String aPattern, Object aHandler) {
+            this(aPattern, null, aHandler);
         }
 
         /**
@@ -67,6 +73,15 @@ public class CompositeRouter implements APIRouter {
             return false;
         }
 
+        /**
+         * @description 지정된 http method 가 없거나, 동일하면 true 반환 (대소문자 구분없음)
+         * @param aHttpMethod 비교할 http method
+         * @return 결과
+         */
+        Boolean matchMethod(String aHttpMethod) {
+            return null == this.httpMethod || this.httpMethod == aHttpMethod;
+        }
+
     }
 
     /**
@@ -88,6 +103,18 @@ public class CompositeRouter implements APIRouter {
     }
 
     /**
+     * @description 하위 Router 등록
+     * @param aPattern 경로 패턴
+     * @param aHttpMethod Http Method
+     * @param aRouter APIRouter 구현체
+     * @return CompositeRouter 인스턴스 (체이닝용)
+     */
+    public CompositeRouter addRouter(String aPattern, String aHttpMethod, APIRouter aRouter) {
+        this.routes.add(new RouteEntry(aPattern, aHttpMethod, aRouter));
+        return this;
+    }
+
+    /**
      * @description Processor 등록 (Leaf)
      * @param aPattern 경로 패턴
      * @param aProcessor APIProcessor 구현체
@@ -95,6 +122,18 @@ public class CompositeRouter implements APIRouter {
      */
     public CompositeRouter addProcessor(String aPattern, APIProcessor aProcessor) {
         this.routes.add(new RouteEntry(aPattern, aProcessor));
+        return this;
+    }
+
+    /**
+     * @description Processor 등록 (Leaf)
+     * @param aPattern 경로 패턴
+     * @param aHttpMethod Http Method
+     * @param aProcessor APIProcessor 구현체
+     * @return CompositeRouter 인스턴스 (체이닝용)
+     */
+    public CompositeRouter addProcessor(String aPattern, String aHttpMethod, APIProcessor aProcessor) {
+        this.routes.add(new RouteEntry(aPattern, aHttpMethod, aProcessor));
         return this;
     }
 
@@ -112,7 +151,7 @@ public class CompositeRouter implements APIRouter {
         String kEffectivePrevPath = aPrevPath;
 
         for (RouteEntry kEntry : this.routes) {
-            if (kEntry.matches(kEffectivePrevPath, aPath)) {
+            if (kEntry.matches(kEffectivePrevPath, aPath) && kEntry.matchMethod(aContext.httpMethod)) {
                 // Composite인 경우 재귀적으로 route() 호출
                 if (kEntry.handler instanceof APIRouter) {
                     // 새로운 prevPath 계산: 와일드카드 패턴은 /* 제거
@@ -125,32 +164,28 @@ public class CompositeRouter implements APIRouter {
                         kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
                     }
 
-                    APIContext kContext = new APIContext();
-                    kContext.pattern = kNewPrevPath;
-                    kContext.requestUrl = aPath;
-                    kContext.pathVar = kPathFinder.parsePathVariables(kNewPrevPath, aPath);
+                    aContext.pattern = kNewPrevPath;
+                    aContext.pathVar = kPathFinder.parsePathVariables(kNewPrevPath, aPath);
                     System.debug(LoggingLevel.INFO, 'Pattern: ' + kNewPrevPath);
                     System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
 
-                    kContext = ((APIRouter) kEntry.handler).route(kContext, kNewPrevPath, aPath);
-                    if (null != kContext) {
-                        return kContext;
+                    aContext = ((APIRouter) kEntry.handler).route(aContext, kNewPrevPath, aPath);
+                    if (null != aContext) {
+                        return aContext;
                     }
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
-                    APIContext kContext = new APIContext();
-                    kContext.processor = (APIProcessor) kEntry.handler;
-                    kContext.pattern = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
-                    kContext.requestUrl = aPath;
-                    kContext.pathVar = kPathFinder.parsePathVariables(kContext.pattern, aPath);
-                    System.debug(LoggingLevel.INFO, 'Pattern: ' + kContext.pattern);
+                    aContext.processor = (APIProcessor) kEntry.handler;
+                    aContext.pattern = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
+                    aContext.pathVar = kPathFinder.parsePathVariables(aContext.pattern, aPath);
+                    System.debug(LoggingLevel.INFO, 'Pattern: ' + aContext.pattern);
                     System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
                     
-                    return kContext;
+                    return aContext;
                 }
             }
         }
-        return new APIContext();
+        return aContext;
     }
 }

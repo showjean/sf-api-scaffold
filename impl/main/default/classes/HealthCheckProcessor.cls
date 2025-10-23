@@ -17,8 +17,10 @@ public class HealthCheckProcessor implements APIProcessor {
         Map<String, Object> kResponse = new Map<String, Object>{
             'status' => this.label ?? 'healthy',
             'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
-            'version' => '1.0.0'
+            'version' => '1.0.0',
+            'httpMethod' => aContext.httpMethod
         };
+        
         System.debug(LoggingLevel.INFO, JSON.serialize(aContext.pathVar));
 
         aRes.statusCode = 200;
