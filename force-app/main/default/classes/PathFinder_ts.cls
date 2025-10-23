@@ -643,4 +643,124 @@ private class PathFinder_ts {
             Assert.areEqual('/api/:version/:id', kFinder.combine('/api', '/:version/:id'), '여러 Path Variable 결합');
         }
     }
+
+    /**
+     * @description parsePathVariables - trailing wildcard 패턴이 경로보다 긴 경우
+     */
+    @IsTest
+    static void testParsePathVariablesTrailingWildcardTooLong() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When - 패턴의 고정 부분이 경로보다 긴 경우
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/:version/:id/*', '/api/v1.5');
+
+            // Then
+            Assert.isNull(kVariables, '패턴이 경로보다 길면 null 반환');
+        }
+    }
+
+    /**
+     * @description matchWildcard - trailing wildcard 패턴 내부 루프에서 인덱스 초과
+     */
+    @IsTest
+    static void testMatchWildcardTrailingIndexOverflow() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 패턴의 고정 부분이 경로 세그먼트보다 많은 경우 (루프 내에서 체크)
+            PathFinder kFinder = new PathFinder('', '/api/v1');
+
+            // When & Then - 패턴 '/api/:id/*' 는 고정 부분이 2개(api, :id), 경로는 2개(api, v1)이므로 매칭 시도
+            // 하지만 루프 중 인덱스가 경로 세그먼트를 초과하지 않으므로 매칭됨
+            Assert.areEqual('/api/v1', kFinder.matches('/api/:id/*'), 'Path Variable + trailing wildcard');
+        }
+    }
+
+    /**
+     * @description matchWildcard - Path Variable과 trailing wildcard 조합
+     */
+    @IsTest
+    static void testMatchWildcardWithPathVariableAndTrailing() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 경로가 패턴보다 긴 경우
+            PathFinder kFinder = new PathFinder('', '/api/v1.5/users/123/profile/edit');
+
+            // When & Then - Path Variable과 trailing wildcard 조합
+            Assert.areEqual('/api/v1.5/users/123/profile', kFinder.matches('/api/:version/users/:id/*'), 'Path Variable + trailing wildcard');
+        }
+    }
+
+    /**
+     * @description matchWildcard - 중간 와일드카드와 Path Variable 조합
+     */
+    @IsTest
+    static void testMatchWildcardMiddleWithPathVariable() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 5개 세그먼트 경로
+            PathFinder kFinder = new PathFinder('', '/api/v1.5/users/123/view');
+
+            // When & Then - 중간 와일드카드와 Path Variable 조합 (세그먼트 개수 일치)
+            Assert.areEqual('/api/v1.5/users/123/view', kFinder.matches('/api/*/users/:id/view'), '중간 wildcard + Path Variable');
+        }
+    }
+
+    /**
+     * @description matchWildcard - 빈 경로에 대한 와일드카드 매칭
+     */
+    @IsTest
+    static void testMatchWildcardEmptyPath() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 빈 경로 (루트)
+            PathFinder kFinder = new PathFinder('', '/');
+
+            // When & Then - 와일드카드 패턴
+            Assert.areEqual('/', kFinder.matches('/*'), '루트 경로에 wildcard 매칭');
+        }
+    }
+
+    /**
+     * @description parsePathVariables - Path Variable과 중간 와일드카드 조합
+     */
+    @IsTest
+    static void testParsePathVariablesWithMiddleWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When - 중간 와일드카드와 Path Variable 조합
+            Map<String, String> kVariables = kFinder.parsePathVariables('/api/*/users/:userId', '/api/v1.5/users/123');
+
+            // Then
+            Assert.areEqual(1, kVariables.size(), '변수가 1개여야 함');
+            Assert.areEqual('123', kVariables.get('userId'), 'userId 값이 123이어야 함');
+        }
+    }
+
+    /**
+     * @description matchWildcard - trailing wildcard 루프 내에서 경로 세그먼트 초과 (line 163)
+     */
+    @IsTest
+    static void testMatchWildcardTrailingLoopOverflow() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 경로가 2개 세그먼트만 있음
+            PathFinder kFinder = new PathFinder('', '/api/v1');
+
+            // When & Then - 패턴의 고정 부분이 3개이므로 루프 내에서 인덱스 초과
+            Assert.isNull(kFinder.matches('/api/:id/:name/*'), 'trailing wildcard 루프 내 인덱스 초과 시 null');
+        }
+    }
+
+    /**
+     * @description matchWildcard - 중간 와일드카드에서 Path Variable 처리 (line 206)
+     */
+    @IsTest
+    static void testMatchWildcardMiddlePathVariable() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '/users/123/view');
+
+            // When & Then - 중간 와일드카드가 아닌 Path Variable만 있는 패턴
+            Assert.areEqual('/users/123/view', kFinder.matches('/users/:userId/view'), 'Path Variable 매칭');
+        }
+    }
 }

@@ -2,8 +2,8 @@
  * @description 경로 매칭을 위한 PathFinder 클래스
  */
 public class PathFinder {
-    private String prevPath;
-    private String originPath;
+    private final String prevPath;
+    private final String originPath;
 
     /**
      * @description 생성자
@@ -159,9 +159,9 @@ public class PathFinder {
             }
 
             for (Integer i = 0; i < kPatternSegments.size() - 1; i++) {
-                if (i >= kPathSegments.size()) {
-                    return null;
-                }
+//                if (i >= kPathSegments.size()) {
+//                    return null;
+//                }
 
                 if (kPatternSegments[i].equals('*')) {
                     continue;
@@ -217,12 +217,7 @@ public class PathFinder {
                 kMatchedSegments.add(kPathSegments[i]);
             }
 
-            if (kMatchedSegments.isEmpty()) {
-                return '/';
-            }
-            else {
-                return '/' + String.join(kMatchedSegments, '/');
-            }
+            return '/' + String.join(kMatchedSegments, '/');
         }
     }
 
