@@ -3,7 +3,7 @@
  * Created by hyodongmin on 2025. 10. 21.
  */
 public class APIScaffold {
-    private final CompositeRouter router;
+    private final APICompositeRouter router;
     private APIExceptionHandler exceptionHandler;
     private final String mainPath;
 
@@ -12,7 +12,7 @@ public class APIScaffold {
      * @param aMainPath Rest API 시작 path
      */
     private APIScaffold(String aMainPath) {
-        this.router = new CompositeRouter();
+        this.router = new APICompositeRouter();
         this.mainPath = aMainPath;
     }
 

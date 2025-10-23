@@ -2,7 +2,7 @@
  * @description PathFinder 단위 테스트
  */
 @IsTest
-private class PathFinder_ts {
+private class APIPathFinder_ts {
 
     /**
      * @description 기본 경로 매칭 테스트
@@ -11,7 +11,7 @@ private class PathFinder_ts {
     static void testBasicPathMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '/users');
+            APIPathFinder kFinder = new APIPathFinder('', '/users');
 
             // When & Then
             Assert.areEqual('/users', kFinder.matches('/users'), '전체 경로가 일치해야 함');
@@ -26,7 +26,7 @@ private class PathFinder_ts {
     static void testHierarchicalPathMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - PrevPath: '/api/v1.0', OriginPath: '/api/v1.0/users/profile'
-            PathFinder kFinder = new PathFinder('/api/v1.0', '/api/v1.0/users/profile');
+            APIPathFinder kFinder = new APIPathFinder('/api/v1.0', '/api/v1.0/users/profile');
 
             // When & Then - PrevPath + NextPath가 OriginPath의 앞부분과 일치하거나 정확히 일치
             Assert.areEqual('/api/v1.0/users/profile', kFinder.matches('/users/profile'), '/users/profile이 정확히 일치');
@@ -42,7 +42,7 @@ private class PathFinder_ts {
     static void testComplexHierarchy() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - PrevPath: '/api/v1.0/users/123', OriginPath: '/api/v1.0/users/123/view'
-            PathFinder kFinder = new PathFinder('/api/v1.0/users/123', '/api/v1.0/users/123/view');
+            APIPathFinder kFinder = new APIPathFinder('/api/v1.0/users/123', '/api/v1.0/users/123/view');
 
             // When & Then
             Assert.areEqual('/api/v1.0/users/123/view', kFinder.matches('/view'), '/view가 일치해야 함');
@@ -57,7 +57,7 @@ private class PathFinder_ts {
     static void testTrailingSlashNormalization() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/users');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/users');
 
             // When & Then - trailing slash 있어도 동일하게 처리
             Assert.areEqual('/api/users', kFinder.matches('/users'), 'trailing slash 없는 경로 매칭');
@@ -72,8 +72,8 @@ private class PathFinder_ts {
     static void testRootPath() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder1 = new PathFinder('', '/');
-            PathFinder kFinder2 = new PathFinder('/', '/users');
+            APIPathFinder kFinder1 = new APIPathFinder('', '/');
+            APIPathFinder kFinder2 = new APIPathFinder('/', '/users');
 
             // When & Then
             Assert.areEqual('/', kFinder1.matches('/'), '루트 경로 / 매칭');
@@ -89,7 +89,7 @@ private class PathFinder_ts {
     static void testEmptyPrevPath() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - PrevPath가 비어있음
-            PathFinder kFinder = new PathFinder('', '/api/users/profile');
+            APIPathFinder kFinder = new APIPathFinder('', '/api/users/profile');
 
             // When & Then
             Assert.areEqual('/api/users/profile', kFinder.matches('/api/users/profile'), '전체 경로가 정확히 일치');
@@ -105,7 +105,7 @@ private class PathFinder_ts {
     static void testNextPathWithoutSlash() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/users');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/users');
 
             // When & Then - NextPath에 슬래시가 없어도 자동으로 추가됨
             Assert.areEqual('/api/users', kFinder.matches('users'), 'users (슬래시 없음)');
@@ -120,7 +120,7 @@ private class PathFinder_ts {
     static void testMultiLevelPathCombination() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api/v1.0/users', '/api/v1.0/users/123/profile/edit');
+            APIPathFinder kFinder = new APIPathFinder('/api/v1.0/users', '/api/v1.0/users/123/profile/edit');
 
             // When & Then
             Assert.areEqual('/api/v1.0/users/123/profile/edit', kFinder.matches('/123/profile/edit'), '다단계 경로 정확히 매칭');
@@ -137,7 +137,7 @@ private class PathFinder_ts {
     static void testPathNormalizationConsistency() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 모든 경로에 trailing slash
-            PathFinder kFinder = new PathFinder('/api/', '/api/users/');
+            APIPathFinder kFinder = new APIPathFinder('/api/', '/api/users/');
 
             // When & Then - trailing slash가 제거되고 비교됨
             Assert.areEqual('/api/users', kFinder.matches('/users'), 'trailing slash 자동 제거');
@@ -152,7 +152,7 @@ private class PathFinder_ts {
     static void testMismatchCases() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api/v1.0', '/api/v1.0/users/profile');
+            APIPathFinder kFinder = new APIPathFinder('/api/v1.0', '/api/v1.0/users/profile');
 
             // When & Then - 여러 케이스
             Assert.areEqual('/api/v1.0/users', kFinder.matches('/users'), '부분 경로는 앞부분 일치');
@@ -169,7 +169,7 @@ private class PathFinder_ts {
     static void testPrefixMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - OriginPath가 더 긴 경로
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/users/123/profile/settings');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/users/123/profile/settings');
 
             // When & Then - 점진적으로 경로를 늘려가며 앞부분 일치 확인
             Assert.areEqual('/api/v1.0', kFinder.matches('/v1.0'), '앞부분 일치 - v1.0');
@@ -190,7 +190,7 @@ private class PathFinder_ts {
     static void testBoundaryConditions() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/users123');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/users123');
 
             // When & Then - '/api/users'는 '/api/users123'의 앞부분이 아님 (슬래시 경계 때문에)
             Assert.isNull(kFinder.matches('/users'), '/users는 /users123의 앞부분이 아님');
@@ -205,7 +205,7 @@ private class PathFinder_ts {
     static void testTrailingWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/users/123');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/users/123');
 
             // When & Then - 끝 와일드카드는 매칭된 부분까지만 반환
             Assert.areEqual('/api/v1.0/users', kFinder.matches('/v1.0/*'), '/v1.0/* 는 와일드카드 위치까지 반환');
@@ -221,7 +221,7 @@ private class PathFinder_ts {
     static void testTrailingWildcardMultipleSegments() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/users/123/profile/settings');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/users/123/profile/settings');
 
             // When & Then - 끝 와일드카드는 와일드카드 위치까지만 반환
             Assert.areEqual('/api/users/123', kFinder.matches('/users/*'), '/users/* 는 와일드카드 위치까지 반환');
@@ -237,7 +237,7 @@ private class PathFinder_ts {
     static void testMiddleWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/health');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/health');
 
             // When & Then - 중간 와일드카드는 정확히 한 세그먼트와 매칭
             Assert.areEqual('/api/v1.0/health', kFinder.matches('/*/health'), '/* /health 는 /v1.0/health 와 매칭');
@@ -252,7 +252,7 @@ private class PathFinder_ts {
     static void testMiddleWildcardSegmentMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/users/view');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/users/view');
 
             // When & Then - 중간 와일드카드는 세그먼트 개수가 정확히 일치해야 함
             Assert.areEqual('/api/v1.0/users/view', kFinder.matches('/*/users/view'), '세그먼트 개수 일치');
@@ -269,7 +269,7 @@ private class PathFinder_ts {
     static void testMultipleWildcards() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/users/123/view');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/users/123/view');
 
             // When & Then - 여러 와일드카드 조합
             Assert.areEqual('/api/v1.0/users/123/view', kFinder.matches('/*/users/*/view'), '두 개의 중간 와일드카드');
@@ -285,8 +285,8 @@ private class PathFinder_ts {
     static void testTrailingVsMiddleWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder1 = new PathFinder('/api', '/api/users/123/detail/info');
-            PathFinder kFinder2 = new PathFinder('/api', '/api/orders/456/view');
+            APIPathFinder kFinder1 = new APIPathFinder('/api', '/api/users/123/detail/info');
+            APIPathFinder kFinder2 = new APIPathFinder('/api', '/api/orders/456/view');
 
             // When & Then - 끝 와일드카드는 와일드카드 위치까지만 반환
             Assert.areEqual('/api/users/123', kFinder1.matches('/users/*'), '끝 와일드카드 - 와일드카드 위치까지');
@@ -305,7 +305,7 @@ private class PathFinder_ts {
     static void testWildcardWithPrefixMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('/api', '/api/v1.0/users/123/profile/edit');
+            APIPathFinder kFinder = new APIPathFinder('/api', '/api/v1.0/users/123/profile/edit');
 
             // When & Then - 끝 와일드카드는 와일드카드 위치까지만 반환
             Assert.areEqual('/api/v1.0/users', kFinder.matches('/v1.0/*'), '끝 와일드카드 - 와일드카드 위치까지');
@@ -321,7 +321,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesBasic() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/v1.5/:id/:pw', '/api/v1.5/xxx/zzz');
@@ -340,7 +340,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesWithWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/*/:id/:pw', '/api/v1.5/xxx/zzz');
@@ -359,7 +359,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesMultiple() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/users/:userId/posts/:postId/comments/:commentId',
@@ -380,7 +380,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesSegmentMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw', '/api/xxx');
@@ -397,7 +397,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesFixedPathMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw', '/web/xxx/zzz');
@@ -414,7 +414,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesWithTrailingWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/:version/*', '/api/v1.5/users/123/profile');
@@ -432,7 +432,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesNoVariables() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/users/list', '/api/users/list');
@@ -449,7 +449,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesTrailingSlash() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When - trailing slash가 있어도 정상 파싱
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/:id/:pw/', '/api/xxx/zzz/');
@@ -468,7 +468,7 @@ private class PathFinder_ts {
     static void testCombineBasic() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 정상적인 경로 결합
             Assert.areEqual('/api/users', kFinder.combine('/api', '/users'), '/api + /users');
@@ -484,7 +484,7 @@ private class PathFinder_ts {
     static void testCombineEmptyPath1() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 빈 문자열이면 두 번째 경로 반환
             Assert.areEqual('/users', kFinder.combine('', '/users'), 'empty + /users');
@@ -499,7 +499,7 @@ private class PathFinder_ts {
     static void testCombineRootPath1() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 루트 경로면 두 번째 경로 반환
             Assert.areEqual('/users', kFinder.combine('/', '/users'), '/ + /users');
@@ -514,7 +514,7 @@ private class PathFinder_ts {
     static void testCombineEmptyPath2() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 빈 문자열이면 첫 번째 경로 반환
             Assert.areEqual('/api', kFinder.combine('/api', ''), '/api + empty');
@@ -529,7 +529,7 @@ private class PathFinder_ts {
     static void testCombineRootPath2() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 루트 경로면 첫 번째 경로 반환
             Assert.areEqual('/api', kFinder.combine('/api', '/'), '/api + /');
@@ -544,7 +544,7 @@ private class PathFinder_ts {
     static void testCombineWithLeadingSlash() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 슬래시로 시작하면 그대로 결합
             Assert.areEqual('/api/users', kFinder.combine('/api', '/users'), '/api + /users');
@@ -559,7 +559,7 @@ private class PathFinder_ts {
     static void testCombineWithoutLeadingSlash() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 슬래시로 시작하지 않으면 슬래시 추가
             Assert.areEqual('/api/users', kFinder.combine('/api', 'users'), '/api + users');
@@ -575,7 +575,7 @@ private class PathFinder_ts {
     static void testCombineBothEmpty() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 양쪽 모두 빈 문자열이면 빈 문자열 반환 (정규화는 normalizePath의 역할)
             Assert.areEqual('', kFinder.combine('', ''), 'empty + empty');
@@ -589,7 +589,7 @@ private class PathFinder_ts {
     static void testCombineBothRoot() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 양쪽 모두 루트 경로면 루트 경로 반환
             Assert.areEqual('/', kFinder.combine('/', '/'), '/ + /');
@@ -603,7 +603,7 @@ private class PathFinder_ts {
     static void testCombineMultipleSegments() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 여러 세그먼트를 가진 경로 결합
             Assert.areEqual('/api/v1.0/users/123/profile', kFinder.combine('/api/v1.0/users', '/123/profile'), '다중 세그먼트 결합');
@@ -619,7 +619,7 @@ private class PathFinder_ts {
     static void testCombineWithWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - 와일드카드가 포함된 경로도 정상 결합
             Assert.areEqual('/api/*', kFinder.combine('/api', '/*'), '와일드카드 결합');
@@ -635,7 +635,7 @@ private class PathFinder_ts {
     static void testCombineWithPathVariable() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When & Then - Path Variable이 포함된 경로도 정상 결합
             Assert.areEqual('/api/:id', kFinder.combine('/api', '/:id'), 'Path Variable 결합');
@@ -651,7 +651,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesTrailingWildcardTooLong() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When - 패턴의 고정 부분이 경로보다 긴 경우
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/:version/:id/*', '/api/v1.5');
@@ -668,7 +668,7 @@ private class PathFinder_ts {
     static void testMatchWildcardTrailingIndexOverflow() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 패턴의 고정 부분이 경로 세그먼트보다 많은 경우 (루프 내에서 체크)
-            PathFinder kFinder = new PathFinder('', '/api/v1');
+            APIPathFinder kFinder = new APIPathFinder('', '/api/v1');
 
             // When & Then - 패턴 '/api/:id/*' 는 고정 부분이 2개(api, :id), 경로는 2개(api, v1)이므로 매칭 시도
             // 하지만 루프 중 인덱스가 경로 세그먼트를 초과하지 않으므로 매칭됨
@@ -683,7 +683,7 @@ private class PathFinder_ts {
     static void testMatchWildcardWithPathVariableAndTrailing() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 경로가 패턴보다 긴 경우
-            PathFinder kFinder = new PathFinder('', '/api/v1.5/users/123/profile/edit');
+            APIPathFinder kFinder = new APIPathFinder('', '/api/v1.5/users/123/profile/edit');
 
             // When & Then - Path Variable과 trailing wildcard 조합
             Assert.areEqual('/api/v1.5/users/123/profile', kFinder.matches('/api/:version/users/:id/*'), 'Path Variable + trailing wildcard');
@@ -697,7 +697,7 @@ private class PathFinder_ts {
     static void testMatchWildcardMiddleWithPathVariable() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 5개 세그먼트 경로
-            PathFinder kFinder = new PathFinder('', '/api/v1.5/users/123/view');
+            APIPathFinder kFinder = new APIPathFinder('', '/api/v1.5/users/123/view');
 
             // When & Then - 중간 와일드카드와 Path Variable 조합 (세그먼트 개수 일치)
             Assert.areEqual('/api/v1.5/users/123/view', kFinder.matches('/api/*/users/:id/view'), '중간 wildcard + Path Variable');
@@ -711,7 +711,7 @@ private class PathFinder_ts {
     static void testMatchWildcardEmptyPath() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 빈 경로 (루트)
-            PathFinder kFinder = new PathFinder('', '/');
+            APIPathFinder kFinder = new APIPathFinder('', '/');
 
             // When & Then - 와일드카드 패턴
             Assert.areEqual('/', kFinder.matches('/*'), '루트 경로에 wildcard 매칭');
@@ -725,7 +725,7 @@ private class PathFinder_ts {
     static void testParsePathVariablesWithMiddleWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '');
+            APIPathFinder kFinder = new APIPathFinder('', '');
 
             // When - 중간 와일드카드와 Path Variable 조합
             Map<String, String> kVariables = kFinder.parsePathVariables('/api/*/users/:userId', '/api/v1.5/users/123');
@@ -743,7 +743,7 @@ private class PathFinder_ts {
     static void testMatchWildcardTrailingLoopOverflow() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 경로가 2개 세그먼트만 있음
-            PathFinder kFinder = new PathFinder('', '/api/v1');
+            APIPathFinder kFinder = new APIPathFinder('', '/api/v1');
 
             // When & Then - 패턴의 고정 부분이 3개이므로 루프 내에서 인덱스 초과
             Assert.isNull(kFinder.matches('/api/:id/:name/*'), 'trailing wildcard 루프 내 인덱스 초과 시 null');
@@ -757,7 +757,7 @@ private class PathFinder_ts {
     static void testMatchWildcardMiddlePathVariable() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            PathFinder kFinder = new PathFinder('', '/users/123/view');
+            APIPathFinder kFinder = new APIPathFinder('', '/users/123/view');
 
             // When & Then - 중간 와일드카드가 아닌 Path Variable만 있는 패턴
             Assert.areEqual('/users/123/view', kFinder.matches('/users/:userId/view'), 'Path Variable 매칭');

@@ -2,7 +2,7 @@
  * @description NotFoundProcessor 단위 테스트
  */
 @IsTest
-private class NotFoundProcessor_ts {
+private class APINotFoundProcessor_ts {
 
     /**
      * @description 404 상태 코드 반환 테스트
@@ -11,7 +11,7 @@ private class NotFoundProcessor_ts {
     static void testReturns404StatusCode() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
             RestResponse kRes = new RestResponse();
@@ -31,7 +31,7 @@ private class NotFoundProcessor_ts {
     static void testResponseBodyFormat() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
             RestResponse kRes = new RestResponse();
@@ -59,7 +59,7 @@ private class NotFoundProcessor_ts {
     static void testRequestURIIncludedInResponse() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             String kRequestURI = '/api/v1.0/users/123/details';
             kReq.requestURI = kRequestURI;
@@ -83,7 +83,7 @@ private class NotFoundProcessor_ts {
     static void testContentTypeHeader() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
             RestResponse kRes = new RestResponse();
@@ -105,7 +105,7 @@ private class NotFoundProcessor_ts {
     static void testErrorMessageContent() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
             RestResponse kRes = new RestResponse();
@@ -131,7 +131,7 @@ private class NotFoundProcessor_ts {
     static void testVariousPathsReturn404() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             List<String> kPaths = new List<String>{
                 '/api/v1.0/users',
                 '/api/v2.0/orders/123',
@@ -163,7 +163,7 @@ private class NotFoundProcessor_ts {
     static void testJSONSerializationValidity() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            NotFoundProcessor kProcessor = new NotFoundProcessor();
+            APINotFoundProcessor kProcessor = new APINotFoundProcessor();
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/test';
             RestResponse kRes = new RestResponse();

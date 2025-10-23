@@ -1,7 +1,7 @@
 /**
  * @description 기본 예외 핸들러 (예제)
  */
-public class DefaultExceptionHandler implements APIExceptionHandler {
+public class APIDefaultExceptionHandler implements APIExceptionHandler {
     /**
      * @description 예외를 처리하고 적절한 응답 생성
      * @param aEx 발생한 예외

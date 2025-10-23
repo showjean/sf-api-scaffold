@@ -2,7 +2,7 @@
  * @description DefaultExceptionHandler 단위 테스트
  */
 @IsTest
-private class DefaultExceptionHandler_ts {
+private class APIDefaultExceptionHandler_ts {
 
     /**
      * @description ScaffoldException 처리 테스트 - 404 반환
@@ -11,7 +11,7 @@ private class DefaultExceptionHandler_ts {
     static void testRouteNotFoundExceptionHandling() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             APIScaffold.ScaffoldException kEx = new APIScaffold.ScaffoldException('Route not found').statusCode(404);
 
@@ -37,7 +37,7 @@ private class DefaultExceptionHandler_ts {
     static void testGenericExceptionHandling() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             Exception kEx = new CustomException('Something went wrong');
 
@@ -60,7 +60,7 @@ private class DefaultExceptionHandler_ts {
     static void testResponseFormat() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             Exception kEx = new CustomException('Test error');
 
@@ -88,7 +88,7 @@ private class DefaultExceptionHandler_ts {
     static void testContentTypeHeader() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             Exception kEx = new CustomException('Test error');
 
@@ -109,7 +109,7 @@ private class DefaultExceptionHandler_ts {
     static void testExceptionTypeName() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             Exception kEx = new CustomException('Test error');
 
@@ -133,7 +133,7 @@ private class DefaultExceptionHandler_ts {
     static void testTimestampFormat() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            DefaultExceptionHandler kHandler = new DefaultExceptionHandler();
+            APIDefaultExceptionHandler kHandler = new APIDefaultExceptionHandler();
             RestResponse kRes = new RestResponse();
             Exception kEx = new CustomException('Test error');
 

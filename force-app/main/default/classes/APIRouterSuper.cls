@@ -3,12 +3,12 @@
  * Created by fsj on 2025-10-22
  */
 public abstract class APIRouterSuper implements APIRouter {
-    private final CompositeRouter compositeRouter;
+    private final APICompositeRouter compositeRouter;
     /**
      * @description 생성자 - 라우트 초기화
      */
     public APIRouterSuper() {
-        this.compositeRouter = new CompositeRouter();
+        this.compositeRouter = new APICompositeRouter();
     }
 
     /**

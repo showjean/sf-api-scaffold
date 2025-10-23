@@ -1,7 +1,7 @@
 /**
  * @description 404 Not Found 응답을 반환하는 Processor
  */
-public class NotFoundProcessor implements APIProcessor {
+public class APINotFoundProcessor implements APIProcessor {
     /**
      * @description 404 응답 생성
      * @param aContext APIContext 객체

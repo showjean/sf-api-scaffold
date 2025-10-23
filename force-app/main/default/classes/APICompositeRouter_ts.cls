@@ -2,7 +2,7 @@
  * @description CompositeRouter 단위 테스트
  */
 @IsTest
-private class CompositeRouter_ts {
+private class APICompositeRouter_ts {
 
     /**
      * @description 단순 경로 매칭 테스트
@@ -11,7 +11,7 @@ private class CompositeRouter_ts {
     static void testSimpleRouteMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
@@ -30,7 +30,7 @@ private class CompositeRouter_ts {
     static void testWildcardMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users/*', new TestHealthCheckProcessor());
 
             // When
@@ -50,11 +50,11 @@ private class CompositeRouter_ts {
     static void testNestedRouter() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 하위 라우터 생성
-            CompositeRouter kSubRouter = new CompositeRouter();
+            APICompositeRouter kSubRouter = new APICompositeRouter();
             kSubRouter.addProcessor('/list', new TestHealthCheckProcessor());
 
             // Given - 상위 라우터에 하위 라우터 등록
-            CompositeRouter kMainRouter = new CompositeRouter();
+            APICompositeRouter kMainRouter = new APICompositeRouter();
             kMainRouter.addRouter('/api/users/*', kSubRouter);
 
             // When
@@ -73,7 +73,7 @@ private class CompositeRouter_ts {
     static void testMultipleRoutePriority() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 먼저 등록된 정확한 경로가 와일드카드보다 우선
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users/special', new TestHealthCheckProcessor());
             kRouter.addProcessor('/api/users/*', new NotFoundProcessor());
 
@@ -93,7 +93,7 @@ private class CompositeRouter_ts {
     static void testNoMatchingRoute() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/v1.0/health', new TestHealthCheckProcessor());
 
             // When
@@ -111,7 +111,7 @@ private class CompositeRouter_ts {
     static void testMethodChaining() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given & When - 체이닝으로 여러 경로 등록
-            CompositeRouter kRouter = new CompositeRouter()
+            APICompositeRouter kRouter = new APICompositeRouter()
                 .addProcessor('/api/health', new TestHealthCheckProcessor())
                 .addProcessor('/api/status', new NotFoundProcessor());
 
@@ -128,7 +128,7 @@ private class CompositeRouter_ts {
     static void testMiddleWildcardMatching() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When
@@ -150,7 +150,7 @@ private class CompositeRouter_ts {
     static void testMiddleWildcardMatchingFail() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/v1.0/*/view', new TestHealthCheckProcessor());
 
             // When - 세그먼트 개수가 다름
@@ -172,7 +172,7 @@ private class CompositeRouter_ts {
     static void testMultipleWildcards() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/*/users/*/view', new TestHealthCheckProcessor());
 
             // When
@@ -190,7 +190,7 @@ private class CompositeRouter_ts {
     static void testEndVsMiddleWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users/*', new TestHealthCheckProcessor());     // 끝 와일드카드
             kRouter.addProcessor('/api/orders/*/view', new NotFoundProcessor()); // 중간 와일드카드
 
@@ -223,7 +223,7 @@ private class CompositeRouter_ts {
     static void testRelativePathRouting() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 상대 경로로 등록된 하위 라우터
-            CompositeRouter kSubRouter = new CompositeRouter();
+            APICompositeRouter kSubRouter = new APICompositeRouter();
             kSubRouter.addProcessor('/health', new TestHealthCheckProcessor());
             kSubRouter.addProcessor('/status', new TestHealthCheckProcessor());
 
@@ -244,14 +244,14 @@ private class CompositeRouter_ts {
     static void testRouterReusability() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 재사용 가능한 라우터 (상대 경로로 등록)
-            CompositeRouter kReusableRouter = new CompositeRouter();
+            APICompositeRouter kReusableRouter = new APICompositeRouter();
             kReusableRouter.addProcessor('/health', new TestHealthCheckProcessor());
 
             // Given - v1.0과 v2.0에 같은 라우터 사용
-            CompositeRouter kV1Router = new CompositeRouter();
+            APICompositeRouter kV1Router = new APICompositeRouter();
             kV1Router.addRouter('/sub/*', kReusableRouter);
 
-            CompositeRouter kV2Router = new CompositeRouter();
+            APICompositeRouter kV2Router = new APICompositeRouter();
             kV2Router.addRouter('/sub/*', kReusableRouter);
 
             // When
@@ -271,7 +271,7 @@ private class CompositeRouter_ts {
     static void testNoPrefix() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - prefix 없이 생성 (기존 방식)
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/health', new TestHealthCheckProcessor());
 
             // When
@@ -289,13 +289,13 @@ private class CompositeRouter_ts {
     static void testNestedRelativePath() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 3단계 중첩 라우터
-            CompositeRouter kLeafRouter = new CompositeRouter();
+            APICompositeRouter kLeafRouter = new APICompositeRouter();
             kLeafRouter.addProcessor('/view', new TestHealthCheckProcessor());
 
-            CompositeRouter kMiddleRouter = new CompositeRouter();
+            APICompositeRouter kMiddleRouter = new APICompositeRouter();
             kMiddleRouter.addRouter('/users/*', kLeafRouter);
 
-            CompositeRouter kRootRouter = new CompositeRouter();
+            APICompositeRouter kRootRouter = new APICompositeRouter();
             kRootRouter.addRouter('/api/v1.0/', 'GET', kMiddleRouter);
 
             // When - 절대 경로 요청
@@ -316,7 +316,7 @@ private class CompositeRouter_ts {
     static void testTrailingSlashNormalization() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users', new TestHealthCheckProcessor());
 
             // When - trailing slash 있는 경로로 요청
@@ -336,7 +336,7 @@ private class CompositeRouter_ts {
     static void testRootPathNormalization() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/', new TestHealthCheckProcessor());
 
             // When
@@ -356,7 +356,7 @@ private class CompositeRouter_ts {
     static void testPatternWithTrailingSlash() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 패턴에 trailing slash
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users/', new TestHealthCheckProcessor());
 
             // When
@@ -376,7 +376,7 @@ private class CompositeRouter_ts {
     static void testPathVariableParsing() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/:version/:id', new TestHealthCheckProcessor());
 
             // When
@@ -398,7 +398,7 @@ private class CompositeRouter_ts {
     static void testPathVariableWithWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/*/:id/:pw', new TestHealthCheckProcessor());
 
             // When
@@ -420,7 +420,7 @@ private class CompositeRouter_ts {
     static void testMultiplePathVariables() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/users/:userId/posts/:postId/comments/:commentId', new TestHealthCheckProcessor());
 
             // When
@@ -442,7 +442,7 @@ private class CompositeRouter_ts {
     static void testNoPathVariables() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users/list', new TestHealthCheckProcessor());
 
             // When
@@ -462,10 +462,10 @@ private class CompositeRouter_ts {
     static void testPathVariableInNestedRouter() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kSubRouter = new CompositeRouter();
+            APICompositeRouter kSubRouter = new APICompositeRouter();
             kSubRouter.addProcessor('/:id/view', new TestHealthCheckProcessor());
 
-            CompositeRouter kMainRouter = new CompositeRouter();
+            APICompositeRouter kMainRouter = new APICompositeRouter();
             kMainRouter.addRouter('/api/users/*', kSubRouter);
 
             // When
@@ -486,7 +486,7 @@ private class CompositeRouter_ts {
     static void testPathVariableWithTrailingWildcard() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/:version/*', new TestHealthCheckProcessor());
 
             // When
@@ -507,7 +507,7 @@ private class CompositeRouter_ts {
     static void testPathVariablePatternMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/:id/:name', new TestHealthCheckProcessor());
 
             // When - 세그먼트 개수가 다름
@@ -525,7 +525,7 @@ private class CompositeRouter_ts {
     static void testPathVariableWithFixedSegments() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/v1.0/users/:userId/profile', new TestHealthCheckProcessor());
 
             // When
@@ -559,13 +559,13 @@ private class CompositeRouter_ts {
     }
 
     class TestAPIRouterV1 implements APIRouter {
-        private final CompositeRouter compositeRouter;
+        private final APICompositeRouter compositeRouter;
 
         /**
          * @description 생성자 - 라우트 초기화
          */
         public TestAPIRouterV1() {
-            this.compositeRouter = new CompositeRouter();
+            this.compositeRouter = new APICompositeRouter();
             this.initializeRoutes();
         }
 
@@ -600,7 +600,7 @@ private class CompositeRouter_ts {
     static void testHttpMethodFiltering() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users', 'GET', new TestHealthCheckProcessor());
             kRouter.addProcessor('/api/users', 'POST', new NotFoundProcessor());
 
@@ -630,7 +630,7 @@ private class CompositeRouter_ts {
     static void testHttpMethodMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users', 'GET', new TestHealthCheckProcessor());
 
             // When - PUT 요청
@@ -651,7 +651,7 @@ private class CompositeRouter_ts {
     static void testHttpMethodNull() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - HTTP 메서드 지정하지 않음 (모든 메서드 허용)
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/health', new TestHealthCheckProcessor());
 
             // When - 여러 HTTP 메서드로 요청
@@ -684,7 +684,7 @@ private class CompositeRouter_ts {
     static void testMultipleMethodsSamePath() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 같은 경로에 4개의 HTTP 메서드 등록
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/api/users', 'GET', new GetProcessor());
             kRouter.addProcessor('/api/users', 'POST', new PostProcessor());
             kRouter.addProcessor('/api/users', 'PUT', new PutProcessor());
@@ -726,11 +726,11 @@ private class CompositeRouter_ts {
     static void testHttpMethodInNestedRouter() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kSubRouter = new CompositeRouter();
+            APICompositeRouter kSubRouter = new APICompositeRouter();
             kSubRouter.addProcessor('/list', 'GET', new TestHealthCheckProcessor());
             kSubRouter.addProcessor('/create', 'POST', new NotFoundProcessor());
 
-            CompositeRouter kMainRouter = new CompositeRouter();
+            APICompositeRouter kMainRouter = new APICompositeRouter();
             kMainRouter.addRouter('/api/users/*', kSubRouter);
 
             // When
@@ -759,13 +759,13 @@ private class CompositeRouter_ts {
     static void testCompositeRouterNullReturn() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 첫 번째 라우터는 /list만 처리, 두 번째 라우터는 /status 처리
-            CompositeRouter kRouter1 = new CompositeRouter();
+            APICompositeRouter kRouter1 = new APICompositeRouter();
             kRouter1.addProcessor('/list', new TestHealthCheckProcessor());
 
-            CompositeRouter kRouter2 = new CompositeRouter();
+            APICompositeRouter kRouter2 = new APICompositeRouter();
             kRouter2.addProcessor('/status', new NotFoundProcessor());
 
-            CompositeRouter kMainRouter = new CompositeRouter();
+            APICompositeRouter kMainRouter = new APICompositeRouter();
             kMainRouter.addRouter('/api/*', kRouter1);
             kMainRouter.addRouter('/api/*', kRouter2);
 

@@ -1,7 +1,7 @@
 /**
  * @description 경로 매칭을 위한 PathFinder 클래스
  */
-public class PathFinder {
+public class APIPathFinder {
     private final String prevPath;
     private final String originPath;
 
@@ -10,7 +10,7 @@ public class PathFinder {
      * @param aPrevPath 지나온 경로
      * @param aOriginPath 원본 요청 경로
      */
-    public PathFinder(String aPrevPath, String aOriginPath) {
+    public APIPathFinder(String aPrevPath, String aOriginPath) {
         this.prevPath = this.normalizePath(aPrevPath);
         this.originPath = this.normalizePath(aOriginPath);
     }

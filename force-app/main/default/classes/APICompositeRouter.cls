@@ -1,7 +1,7 @@
 /**
  * @description Composite 패턴의 Composite 역할 - 여러 하위 라우터/프로세서를 관리 (상대 경로 지원)
  */
-public class CompositeRouter implements APIRouter {
+public class APICompositeRouter implements APIRouter {
     private final List<RouteEntry> routes;
 
     /**
@@ -57,7 +57,7 @@ public class CompositeRouter implements APIRouter {
 
             String kNormalizedPath = normalizePath(aPath);
             // PathFinder를 사용하여 매칭 확인
-            PathFinder kFinder = new PathFinder(aPrevPath, kNormalizedPath);
+            APIPathFinder kFinder = new APIPathFinder(aPrevPath, kNormalizedPath);
             String kResult = kFinder.matches(this.pattern);
             if (String.isNotBlank(kResult)) {
                 System.debug(LoggingLevel.INFO, '✔' +this.handler.toString().substringBefore(':') + ' => ' + kResult);
@@ -87,7 +87,7 @@ public class CompositeRouter implements APIRouter {
     /**
      * @description 기본 생성자 (하위 호환성)
      */
-    public CompositeRouter() {
+    public APICompositeRouter() {
         this.routes = new List<RouteEntry>();
     }
 
@@ -97,7 +97,7 @@ public class CompositeRouter implements APIRouter {
      * @param aRouter APIRouter 구현체
      * @return CompositeRouter 인스턴스 (체이닝용)
      */
-    public CompositeRouter addRouter(String aPattern, APIRouter aRouter) {
+    public APICompositeRouter addRouter(String aPattern, APIRouter aRouter) {
         this.routes.add(new RouteEntry(aPattern, aRouter));
         return this;
     }
@@ -109,7 +109,7 @@ public class CompositeRouter implements APIRouter {
      * @param aRouter APIRouter 구현체
      * @return CompositeRouter 인스턴스 (체이닝용)
      */
-    public CompositeRouter addRouter(String aPattern, String aHttpMethod, APIRouter aRouter) {
+    public APICompositeRouter addRouter(String aPattern, String aHttpMethod, APIRouter aRouter) {
         this.routes.add(new RouteEntry(aPattern, aHttpMethod, aRouter));
         return this;
     }
@@ -120,7 +120,7 @@ public class CompositeRouter implements APIRouter {
      * @param aProcessor APIProcessor 구현체
      * @return CompositeRouter 인스턴스 (체이닝용)
      */
-    public CompositeRouter addProcessor(String aPattern, APIProcessor aProcessor) {
+    public APICompositeRouter addProcessor(String aPattern, APIProcessor aProcessor) {
         this.routes.add(new RouteEntry(aPattern, aProcessor));
         return this;
     }
@@ -132,7 +132,7 @@ public class CompositeRouter implements APIRouter {
      * @param aProcessor APIProcessor 구현체
      * @return CompositeRouter 인스턴스 (체이닝용)
      */
-    public CompositeRouter addProcessor(String aPattern, String aHttpMethod, APIProcessor aProcessor) {
+    public APICompositeRouter addProcessor(String aPattern, String aHttpMethod, APIProcessor aProcessor) {
         this.routes.add(new RouteEntry(aPattern, aHttpMethod, aProcessor));
         return this;
     }
@@ -147,7 +147,7 @@ public class CompositeRouter implements APIRouter {
     public APIContext route(APIContext aContext, String aPrevPath, String aPath) {
 //        System.debug(LoggingLevel.INFO, 'CompositeRouter.route() - PrevPath: ' + aPrevPath + ', Path: ' + aPath);
 
-        PathFinder kPathFinder = new PathFinder('', '');
+        APIPathFinder kPathFinder = new APIPathFinder('', '');
         String kEffectivePrevPath = aPrevPath;
 
         for (RouteEntry kEntry : this.routes) {

@@ -14,7 +14,7 @@ private class APIScaffold_ts {
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // Given - Mock Request/Response
             RestRequest kReq = new RestRequest();
@@ -45,7 +45,7 @@ private class APIScaffold_ts {
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v2.0/health';
@@ -70,7 +70,7 @@ private class APIScaffold_ts {
             // Given
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/nonexistent';
@@ -121,7 +121,7 @@ private class APIScaffold_ts {
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', new TestAPIRouterV1())
                 .route('/api/v2.0/*', new TestAPIRouterV2())
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // When & Then - V1 테스트
             RestRequest kReqV1 = new RestRequest();
@@ -149,12 +149,12 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - 예외를 던지는 Mock Processor
             MockErrorProcessor kErrorProcessor = new MockErrorProcessor();
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/error', kErrorProcessor);
 
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', kRouter)
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             RestRequest kReq = new RestRequest();
             kReq.requestURI = '/api/v1.0/error';
@@ -186,13 +186,13 @@ private class APIScaffold_ts {
     }
 
     class TestAPIRouterV1 implements APIRouter {
-        private CompositeRouter compositeRouter;
+        private APICompositeRouter compositeRouter;
 
         /**
          * @description 생성자 - 라우트 초기화
          */
         public TestAPIRouterV1() {
-            this.compositeRouter = new CompositeRouter();
+            this.compositeRouter = new APICompositeRouter();
             this.initializeRoutes();
         }
 
@@ -221,13 +221,13 @@ private class APIScaffold_ts {
     }
 
     class TestAPIRouterV2 implements APIRouter {
-        private CompositeRouter compositeRouter;
+        private APICompositeRouter compositeRouter;
 
         /**
          * @description 생성자 - 라우트 초기화
          */
         public TestAPIRouterV2() {
-            this.compositeRouter = new CompositeRouter();
+            this.compositeRouter = new APICompositeRouter();
             this.initializeRoutes();
         }
 
@@ -261,12 +261,12 @@ private class APIScaffold_ts {
     static void testMainPathRouting() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - mainPath를 '/services/apexrest'로 설정
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/health', new TestHealthCheckProcessor());
 
             APIScaffold kScaffold = APIScaffold.create('/services/apexrest')
                 .route('/api/v1.0/*', kRouter)
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // When
             RestRequest kReq = new RestRequest();
@@ -288,16 +288,16 @@ private class APIScaffold_ts {
     static void testHttpMethodRouting() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
-            CompositeRouter kGetRouter = new CompositeRouter();
+            APICompositeRouter kGetRouter = new APICompositeRouter();
             kGetRouter.addProcessor('/users', new GetUsersProcessor());
 
-            CompositeRouter kPostRouter = new CompositeRouter();
+            APICompositeRouter kPostRouter = new APICompositeRouter();
             kPostRouter.addProcessor('/users', new CreateUserProcessor());
 
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', 'GET', kGetRouter)
                 .route('/api/v1.0/*', 'POST', kPostRouter)
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // When - GET 요청
             RestRequest kGetReq = new RestRequest();
@@ -335,12 +335,12 @@ private class APIScaffold_ts {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given
             ContextCheckProcessor kProcessor = new ContextCheckProcessor();
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/:userId/profile', kProcessor);
 
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/users/*', kRouter)
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // When
             RestRequest kReq = new RestRequest();
@@ -367,12 +367,12 @@ private class APIScaffold_ts {
     static void testHttpMethodMismatch() {
         System.runAs(new User(Id = UserInfo.getUserId())) {
             // Given - GET만 허용
-            CompositeRouter kRouter = new CompositeRouter();
+            APICompositeRouter kRouter = new APICompositeRouter();
             kRouter.addProcessor('/users', 'GET', new GetUsersProcessor());
 
             APIScaffold kScaffold = APIScaffold.create('')
                 .route('/api/v1.0/*', kRouter)
-                .exception(new DefaultExceptionHandler());
+                .exception(new APIDefaultExceptionHandler());
 
             // When - POST 요청
             RestRequest kReq = new RestRequest();
