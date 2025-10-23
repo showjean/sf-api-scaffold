@@ -44,10 +44,11 @@ private class NotFoundProcessor_ts {
 
             String kResponseBody = kRes.responseBody.toString();
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
+            Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
 
-            Assert.isTrue(kResponse.containsKey('error'), 'error 필드가 있어야 함');
-            Assert.isTrue(kResponse.containsKey('message'), 'message 필드가 있어야 함');
-            Assert.isTrue(kResponse.containsKey('path'), 'path 필드가 있어야 함');
+            Assert.isTrue(kResponse.containsKey('requestUrl'), 'requestUrl 필드가 있어야 함');
+            Assert.isTrue(kError.containsKey('type'), 'type 필드가 있어야 함');
+            Assert.isTrue(kError.containsKey('message'), 'message 필드가 있어야 함');
         }
     }
 
@@ -70,8 +71,8 @@ private class NotFoundProcessor_ts {
             // Then
             String kResponseBody = kRes.responseBody.toString();
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
-
-            Assert.areEqual(kRequestURI, kResponse.get('path'), '요청 경로가 응답에 포함되어야 함');
+            Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
+            Assert.areEqual(kRequestURI, kResponse.get('requestUrl'), '요청 경로가 응답에 포함되어야 함');
         }
     }
 
@@ -115,9 +116,11 @@ private class NotFoundProcessor_ts {
             // Then
             String kResponseBody = kRes.responseBody.toString();
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
+            Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
+            
 
-            Assert.areEqual('Not Found', kResponse.get('error'), 'error는 "Not Found"여야 함');
-            Assert.areEqual('The requested resource was not found', kResponse.get('message'), 'message가 정확해야 함');
+            Assert.areEqual('Not Found', kError.get('type'), 'error는 "Not Found"여야 함');
+            Assert.areEqual('The requested resource was not found', kError.get('message'), 'message가 정확해야 함');
         }
     }
 
@@ -148,7 +151,7 @@ private class NotFoundProcessor_ts {
 
                 String kResponseBody = kRes.responseBody.toString();
                 Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
-                Assert.areEqual(kPath, kResponse.get('path'), '응답에 정확한 경로가 포함되어야 함');
+                Assert.areEqual(kPath, kResponse.get('requestUrl'), '응답에 정확한 경로가 포함되어야 함');
             }
         }
     }

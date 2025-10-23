@@ -17,20 +17,17 @@ public class DefaultExceptionHandler implements APIExceptionHandler {
 
         // ScaffoldException statusCode 사용
         if (kErrorType == 'APIScaffold.ScaffoldException') {
-            kStatusCode = ((APIScaffold.ScaffoldException)aEx).statusCode ?? kStatusCode;
+            kStatusCode = ((APIScaffold.ScaffoldException) aEx).statusCode ?? kStatusCode;
         }
 
-        Map<String, Object> kErrorResponse = new Map<String, Object>{
-            'success' => false,
-            'error' => new Map<String, String>{
-                'type' => kErrorType,
-                'message' => aEx.getMessage(),
-                'timestamp' => Datetime.now().formatGmt('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')
-            }
-        };
+        APIResponse kResponse = new APIResponse.Builder()
+                .success(false)
+                .requestUrl(aReq.requestURI)
+                .error(kErrorType, aEx.getMessage())
+                .build();
 
         aRes.statusCode = kStatusCode;
-        aRes.responseBody = Blob.valueOf(JSON.serialize(kErrorResponse));
+        aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
         aRes.addHeader('Content-Type', 'application/json');
     }
 }

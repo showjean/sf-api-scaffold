@@ -90,18 +90,19 @@ public class APIScaffold {
             }
         }
         catch (Exception kEx) {
-            this.handleException(kEx, aRes);
+            this.handleException(kEx, aReq, aRes);
         }
     }
 
     /**
      * @description 예외 처리
      * @param aEx 발생한 예외
+     * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
      */
-    private void handleException(Exception aEx, RestResponse aRes) {
+    private void handleException(Exception aEx,  RestRequest aReq, RestResponse aRes) {
         if (this.exceptionHandler != null) {
-            this.exceptionHandler.handle(aEx, aRes);
+            this.exceptionHandler.handle(aEx, aReq, aRes);
         }
         else {
             // 기본 예외 처리

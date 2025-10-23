@@ -73,11 +73,11 @@ private class DefaultExceptionHandler_ts {
 
             Assert.areEqual(false, kResponse.get('success'), 'success는 false여야 함');
             Assert.isTrue(kResponse.containsKey('error'), 'error 객체가 있어야 함');
+            Assert.isTrue(kResponse.containsKey('timestamp'), 'error.timestamp가 있어야 함');
 
             Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
             Assert.isTrue(kError.containsKey('type'), 'error.type이 있어야 함');
             Assert.isTrue(kError.containsKey('message'), 'error.message가 있어야 함');
-            Assert.isTrue(kError.containsKey('timestamp'), 'error.timestamp가 있어야 함');
         }
     }
 
@@ -145,7 +145,7 @@ private class DefaultExceptionHandler_ts {
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
             Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
 
-            String kTimestamp = (String)kError.get('timestamp');
+            String kTimestamp = (String)kResponse.get('timestamp');
             Assert.isNotNull(kTimestamp, 'timestamp가 있어야 함');
             Assert.isTrue(kTimestamp.contains('T'), 'ISO 8601 형식이어야 함');
             Assert.isTrue(kTimestamp.contains('Z'), 'UTC 시간이어야 함');
