@@ -5,7 +5,8 @@ public interface APIExceptionHandler {
     /**
      * @description 예외를 처리하고 적절한 응답을 생성
      * @param aEx 발생한 예외 객체
+     * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
      */
-    void handle(Exception aEx, RestResponse aRes);
+    void handle(Exception aEx, RestRequest aReq, RestResponse aRes);
 }

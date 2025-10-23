@@ -5,9 +5,10 @@ public class DefaultExceptionHandler implements APIExceptionHandler {
     /**
      * @description 예외를 처리하고 적절한 응답 생성
      * @param aEx 발생한 예외
+     * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
      */
-    public void handle(Exception aEx, RestResponse aRes) {
+    public void handle(Exception aEx, RestRequest aReq, RestResponse aRes) {
         System.debug(LoggingLevel.ERROR, 'API Exception: ' + aEx.getMessage());
         System.debug(LoggingLevel.ERROR, 'Stack Trace: ' + aEx.getStackTraceString());
 

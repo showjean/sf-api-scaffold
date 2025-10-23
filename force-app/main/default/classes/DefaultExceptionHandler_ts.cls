@@ -16,7 +16,7 @@ private class DefaultExceptionHandler_ts {
             APIScaffold.ScaffoldException kEx = new APIScaffold.ScaffoldException('Route not found').statusCode(404);
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             Assert.areEqual(404, kRes.statusCode, 'RouteNotFoundException은 404를 반환해야 함');
@@ -42,7 +42,7 @@ private class DefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Something went wrong');
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             Assert.areEqual(500, kRes.statusCode, '일반 예외는 500을 반환해야 함');
@@ -65,7 +65,7 @@ private class DefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -93,7 +93,7 @@ private class DefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             Map<String, String> kHeaders = kRes.headers;
@@ -114,7 +114,7 @@ private class DefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -138,7 +138,7 @@ private class DefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, kRes);
+            kHandler.handle(kEx, new RestRequest(), kRes);
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
