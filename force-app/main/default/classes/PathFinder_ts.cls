@@ -460,4 +460,187 @@ private class PathFinder_ts {
             Assert.areEqual('zzz', kVariables.get('pw'), 'pw 값이 zzz여야 함');
         }
     }
+
+    /**
+     * @description combine() 메서드 - 기본 경로 결합 테스트
+     */
+    @IsTest
+    static void testCombineBasic() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 정상적인 경로 결합
+            Assert.areEqual('/api/users', kFinder.combine('/api', '/users'), '/api + /users');
+            Assert.areEqual('/api/v1.0/users', kFinder.combine('/api/v1.0', '/users'), '/api/v1.0 + /users');
+            Assert.areEqual('/api/users/profile', kFinder.combine('/api/users', '/profile'), '/api/users + /profile');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 첫 번째 경로가 빈 문자열인 경우
+     */
+    @IsTest
+    static void testCombineEmptyPath1() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 빈 문자열이면 두 번째 경로 반환
+            Assert.areEqual('/users', kFinder.combine('', '/users'), 'empty + /users');
+            Assert.areEqual('/api/v1.0', kFinder.combine('', '/api/v1.0'), 'empty + /api/v1.0');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 첫 번째 경로가 루트 경로인 경우
+     */
+    @IsTest
+    static void testCombineRootPath1() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 루트 경로면 두 번째 경로 반환
+            Assert.areEqual('/users', kFinder.combine('/', '/users'), '/ + /users');
+            Assert.areEqual('/api/v1.0', kFinder.combine('/', '/api/v1.0'), '/ + /api/v1.0');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 두 번째 경로가 빈 문자열인 경우
+     */
+    @IsTest
+    static void testCombineEmptyPath2() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 빈 문자열이면 첫 번째 경로 반환
+            Assert.areEqual('/api', kFinder.combine('/api', ''), '/api + empty');
+            Assert.areEqual('/api/v1.0', kFinder.combine('/api/v1.0', ''), '/api/v1.0 + empty');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 두 번째 경로가 루트 경로인 경우
+     */
+    @IsTest
+    static void testCombineRootPath2() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 루트 경로면 첫 번째 경로 반환
+            Assert.areEqual('/api', kFinder.combine('/api', '/'), '/api + /');
+            Assert.areEqual('/api/v1.0', kFinder.combine('/api/v1.0', '/'), '/api/v1.0 + /');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 두 번째 경로가 슬래시로 시작하는 경우
+     */
+    @IsTest
+    static void testCombineWithLeadingSlash() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 슬래시로 시작하면 그대로 결합
+            Assert.areEqual('/api/users', kFinder.combine('/api', '/users'), '/api + /users');
+            Assert.areEqual('/api/users/profile', kFinder.combine('/api/users', '/profile'), '/api/users + /profile');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 두 번째 경로가 슬래시로 시작하지 않는 경우
+     */
+    @IsTest
+    static void testCombineWithoutLeadingSlash() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 슬래시로 시작하지 않으면 슬래시 추가
+            Assert.areEqual('/api/users', kFinder.combine('/api', 'users'), '/api + users');
+            Assert.areEqual('/api/users/profile', kFinder.combine('/api/users', 'profile'), '/api/users + profile');
+            Assert.areEqual('/api/v1.0/health', kFinder.combine('/api/v1.0', 'health'), '/api/v1.0 + health');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 양쪽 모두 빈 문자열인 경우
+     */
+    @IsTest
+    static void testCombineBothEmpty() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 양쪽 모두 빈 문자열이면 빈 문자열 반환 (정규화는 normalizePath의 역할)
+            Assert.areEqual('', kFinder.combine('', ''), 'empty + empty');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 양쪽 모두 루트 경로인 경우
+     */
+    @IsTest
+    static void testCombineBothRoot() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 양쪽 모두 루트 경로면 루트 경로 반환
+            Assert.areEqual('/', kFinder.combine('/', '/'), '/ + /');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 다중 세그먼트 경로 결합 테스트
+     */
+    @IsTest
+    static void testCombineMultipleSegments() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 여러 세그먼트를 가진 경로 결합
+            Assert.areEqual('/api/v1.0/users/123/profile', kFinder.combine('/api/v1.0/users', '/123/profile'), '다중 세그먼트 결합');
+            Assert.areEqual('/api/v1.0/users/123/profile/edit', kFinder.combine('/api/v1.0', '/users/123/profile/edit'), '다중 세그먼트 결합 2');
+            Assert.areEqual('/a/b/c/d/e/f', kFinder.combine('/a/b/c', '/d/e/f'), '다중 세그먼트 결합 3');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - 와일드카드 경로 결합 테스트
+     */
+    @IsTest
+    static void testCombineWithWildcard() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - 와일드카드가 포함된 경로도 정상 결합
+            Assert.areEqual('/api/*', kFinder.combine('/api', '/*'), '와일드카드 결합');
+            Assert.areEqual('/api/*/users', kFinder.combine('/api', '/*/users'), '중간 와일드카드 결합');
+            Assert.areEqual('/api/v1.0/*', kFinder.combine('/api/v1.0', '/*'), '끝 와일드카드 결합');
+        }
+    }
+
+    /**
+     * @description combine() 메서드 - Path Variable 경로 결합 테스트
+     */
+    @IsTest
+    static void testCombineWithPathVariable() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            PathFinder kFinder = new PathFinder('', '');
+
+            // When & Then - Path Variable이 포함된 경로도 정상 결합
+            Assert.areEqual('/api/:id', kFinder.combine('/api', '/:id'), 'Path Variable 결합');
+            Assert.areEqual('/api/users/:userId/profile', kFinder.combine('/api/users', '/:userId/profile'), 'Path Variable 결합 2');
+            Assert.areEqual('/api/:version/:id', kFinder.combine('/api', '/:version/:id'), '여러 Path Variable 결합');
+        }
+    }
 }
