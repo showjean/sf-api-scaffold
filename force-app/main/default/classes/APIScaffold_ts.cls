@@ -254,6 +254,139 @@ private class APIScaffold_ts {
         }
     }
     
+    /**
+     * @description MainPath 라우팅 테스트
+     */
+    @IsTest
+    static void testMainPathRouting() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - mainPath를 '/services/apexrest'로 설정
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/health', new TestHealthCheckProcessor());
+
+            APIScaffold kScaffold = APIScaffold.create('/services/apexrest')
+                .route('/api/v1.0/*', kRouter)
+                .exception(new DefaultExceptionHandler());
+
+            // When
+            RestRequest kReq = new RestRequest();
+            kReq.requestURI = '/services/apexrest/api/v1.0/health';
+            kReq.httpMethod = 'GET';
+            RestResponse kRes = new RestResponse();
+
+            kScaffold.process(kReq, kRes);
+
+            // Then
+            Assert.areEqual(200, kRes.statusCode, 'mainPath가 적용된 경로가 정상 작동해야 함');
+        }
+    }
+
+    /**
+     * @description HTTP 메서드 기반 라우팅 테스트
+     */
+    @IsTest
+    static void testHttpMethodRouting() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kGetRouter = new CompositeRouter();
+            kGetRouter.addProcessor('/users', new GetUsersProcessor());
+
+            CompositeRouter kPostRouter = new CompositeRouter();
+            kPostRouter.addProcessor('/users', new CreateUserProcessor());
+
+            APIScaffold kScaffold = APIScaffold.create('')
+                .route('/api/v1.0/*', 'GET', kGetRouter)
+                .route('/api/v1.0/*', 'POST', kPostRouter)
+                .exception(new DefaultExceptionHandler());
+
+            // When - GET 요청
+            RestRequest kGetReq = new RestRequest();
+            kGetReq.requestURI = '/api/v1.0/users';
+            kGetReq.httpMethod = 'GET';
+            RestResponse kGetRes = new RestResponse();
+
+            kScaffold.process(kGetReq, kGetRes);
+
+            // Then
+            Assert.areEqual(200, kGetRes.statusCode, 'GET 요청이 정상 처리되어야 함');
+            String kGetResponseBody = kGetRes.responseBody.toString();
+            Assert.isTrue(kGetResponseBody.contains('users'), 'GET response에 users가 포함되어야 함');
+
+            // When - POST 요청
+            RestRequest kPostReq = new RestRequest();
+            kPostReq.requestURI = '/api/v1.0/users';
+            kPostReq.httpMethod = 'POST';
+            RestResponse kPostRes = new RestResponse();
+
+            kScaffold.process(kPostReq, kPostRes);
+
+            // Then
+            Assert.areEqual(201, kPostRes.statusCode, 'POST 요청이 정상 처리되어야 함');
+            String kPostResponseBody = kPostRes.responseBody.toString();
+            Assert.isTrue(kPostResponseBody.contains('created'), 'POST response에 created가 포함되어야 함');
+        }
+    }
+
+    /**
+     * @description APIContext 전파 테스트
+     */
+    @IsTest
+    static void testContextPropagation() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            ContextCheckProcessor kProcessor = new ContextCheckProcessor();
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/:userId/profile', kProcessor);
+
+            APIScaffold kScaffold = APIScaffold.create('')
+                .route('/api/users/*', kRouter)
+                .exception(new DefaultExceptionHandler());
+
+            // When
+            RestRequest kReq = new RestRequest();
+            kReq.requestURI = '/api/users/123/profile';
+            kReq.httpMethod = 'GET';
+            RestResponse kRes = new RestResponse();
+
+            kScaffold.process(kReq, kRes);
+
+            // Then
+            Assert.areEqual(200, kRes.statusCode, '요청이 정상 처리되어야 함');
+            Assert.isNotNull(kProcessor.receivedContext, 'Processor가 Context를 받아야 함');
+            Assert.areEqual('GET', kProcessor.receivedContext.httpMethod, 'httpMethod가 전파되어야 함');
+            Assert.areEqual('/api/users/123/profile', kProcessor.receivedContext.requestUrl, 'requestUrl이 전파되어야 함');
+            Assert.isNotNull(kProcessor.receivedContext.pathVar, 'pathVar가 설정되어야 함');
+            Assert.areEqual('123', kProcessor.receivedContext.pathVar.get('userId'), 'userId가 파싱되어야 함');
+        }
+    }
+
+    /**
+     * @description HTTP 메서드 불일치로 인한 404 테스트
+     */
+    @IsTest
+    static void testHttpMethodMismatch() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - GET만 허용
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/users', 'GET', new GetUsersProcessor());
+
+            APIScaffold kScaffold = APIScaffold.create('')
+                .route('/api/v1.0/*', kRouter)
+                .exception(new DefaultExceptionHandler());
+
+            // When - POST 요청
+            RestRequest kReq = new RestRequest();
+            kReq.requestURI = '/api/v1.0/users';
+            kReq.httpMethod = 'POST';
+            RestResponse kRes = new RestResponse();
+
+            kScaffold.process(kReq, kRes);
+
+            // Then
+            Assert.areEqual(404, kRes.statusCode, 'HTTP 메서드가 맞지 않으면 404를 반환해야 함');
+        }
+    }
+
     class TestHealthCheckProcessor implements APIProcessor {
         /**
          * @description 헬스 체크 요청 처리
@@ -271,6 +404,39 @@ private class APIScaffold_ts {
             aRes.statusCode = 200;
             aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
             aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
+    class GetUsersProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            Map<String, Object> kResponse = new Map<String, Object>{
+                'users' => new List<String>{'user1', 'user2'}
+            };
+            aRes.statusCode = 200;
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
+    class CreateUserProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            Map<String, Object> kResponse = new Map<String, Object>{
+                'message' => 'User created',
+                'userId' => '123'
+            };
+            aRes.statusCode = 201;
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
+    class ContextCheckProcessor implements APIProcessor {
+        public APIContext receivedContext;
+
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            this.receivedContext = aContext;
+            aRes.statusCode = 200;
+            aRes.responseBody = Blob.valueOf('OK');
         }
     }
 

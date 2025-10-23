@@ -296,10 +296,12 @@ private class CompositeRouter_ts {
             kMiddleRouter.addRouter('/users/*', kLeafRouter);
 
             CompositeRouter kRootRouter = new CompositeRouter();
-            kRootRouter.addRouter('/api/v1.0/*', kMiddleRouter);
+            kRootRouter.addRouter('/api/v1.0/', 'GET', kMiddleRouter);
 
             // When - 절대 경로 요청
-            APIContext kContext = kRootRouter.route(new APIContext(), '', '/api/v1.0/users/view');
+            APIContext kContext = new APIContext();
+            kContext.httpMethod = 'GET';
+            kContext = kRootRouter.route(kContext, '', '/api/v1.0/users/view');
 
             // Then
             Assert.isNotNull(kContext.processor, '중첩된 상대 경로가 정상 작동해야 함');
@@ -590,6 +592,179 @@ private class CompositeRouter_ts {
         }
     }
 
+    /**
+     * @description HTTP 메서드 필터링 기본 테스트
+     */
+    @IsTest
+    static void testHttpMethodFiltering() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users', 'GET', new TestHealthCheckProcessor());
+            kRouter.addProcessor('/api/users', 'POST', new NotFoundProcessor());
+
+            // When
+            APIContext kGetContext = new APIContext();
+            kGetContext.httpMethod = 'GET';
+            kGetContext = kRouter.route(kGetContext, '', '/api/users');
+
+            APIContext kPostContext = new APIContext();
+            kPostContext.httpMethod = 'POST';
+            kPostContext = kRouter.route(kPostContext, '', '/api/users');
+
+            // Then
+            Assert.isNotNull(kGetContext.processor, 'GET 요청이 매칭되어야 함');
+            Assert.isTrue(kGetContext.processor instanceof TestHealthCheckProcessor, 'GET은 TestHealthCheckProcessor여야 함');
+            Assert.isNotNull(kPostContext.processor, 'POST 요청이 매칭되어야 함');
+            Assert.isTrue(kPostContext.processor instanceof NotFoundProcessor, 'POST는 NotFoundProcessor여야 함');
+        }
+    }
+
+    /**
+     * @description HTTP 메서드 불일치 테스트
+     */
+    @IsTest
+    static void testHttpMethodMismatch() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users', 'GET', new TestHealthCheckProcessor());
+
+            // When - PUT 요청
+            APIContext kContext = new APIContext();
+            kContext.httpMethod = 'PUT';
+            kContext = kRouter.route(kContext, '', '/api/users');
+
+            // Then
+            Assert.isNull(kContext.processor, 'HTTP 메서드가 맞지 않으면 매칭되지 않아야 함');
+        }
+    }
+
+    /**
+     * @description HTTP 메서드 null 테스트 - 모든 메서드 허용
+     */
+    @IsTest
+    static void testHttpMethodNull() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - HTTP 메서드 지정하지 않음 (모든 메서드 허용)
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/health', new TestHealthCheckProcessor());
+
+            // When - 여러 HTTP 메서드로 요청
+            APIContext kGetContext = new APIContext();
+            kGetContext.httpMethod = 'GET';
+            kGetContext = kRouter.route(kGetContext, '', '/api/health');
+
+            APIContext kPostContext = new APIContext();
+            kPostContext.httpMethod = 'POST';
+            kPostContext = kRouter.route(kPostContext, '', '/api/health');
+
+            APIContext kDeleteContext = new APIContext();
+            kDeleteContext.httpMethod = 'DELETE';
+            kDeleteContext = kRouter.route(kDeleteContext, '', '/api/health');
+
+            // Then - 모든 메서드가 매칭되어야 함
+            Assert.isNotNull(kGetContext.processor, 'GET 요청이 매칭되어야 함');
+            Assert.isNotNull(kPostContext.processor, 'POST 요청이 매칭되어야 함');
+            Assert.isNotNull(kDeleteContext.processor, 'DELETE 요청이 매칭되어야 함');
+        }
+    }
+
+    /**
+     * @description 같은 경로에 여러 HTTP 메서드 등록 테스트
+     */
+    @IsTest
+    static void testMultipleMethodsSamePath() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 같은 경로에 4개의 HTTP 메서드 등록
+            CompositeRouter kRouter = new CompositeRouter();
+            kRouter.addProcessor('/api/users', 'GET', new GetProcessor());
+            kRouter.addProcessor('/api/users', 'POST', new PostProcessor());
+            kRouter.addProcessor('/api/users', 'PUT', new PutProcessor());
+            kRouter.addProcessor('/api/users', 'DELETE', new DeleteProcessor());
+
+            // When - 각 메서드로 요청
+            APIContext kGetContext = new APIContext();
+            kGetContext.httpMethod = 'GET';
+            kGetContext = kRouter.route(kGetContext, '', '/api/users');
+
+            APIContext kPostContext = new APIContext();
+            kPostContext.httpMethod = 'POST';
+            kPostContext = kRouter.route(kPostContext, '', '/api/users');
+
+            APIContext kPutContext = new APIContext();
+            kPutContext.httpMethod = 'PUT';
+            kPutContext = kRouter.route(kPutContext, '', '/api/users');
+
+            APIContext kDeleteContext = new APIContext();
+            kDeleteContext.httpMethod = 'DELETE';
+            kDeleteContext = kRouter.route(kDeleteContext, '', '/api/users');
+
+            // Then - 각각 다른 Processor가 매칭되어야 함
+            Assert.isTrue(kGetContext.processor instanceof GetProcessor, 'GET은 GetProcessor여야 함');
+            Assert.isTrue(kPostContext.processor instanceof PostProcessor, 'POST는 PostProcessor여야 함');
+            Assert.isTrue(kPutContext.processor instanceof PutProcessor, 'PUT은 PutProcessor여야 함');
+            Assert.isTrue(kDeleteContext.processor instanceof DeleteProcessor, 'DELETE는 DeleteProcessor여야 함');
+        }
+    }
+
+    /**
+     * @description 중첩 라우터에서 HTTP 메서드 필터링 테스트
+     */
+    @IsTest
+    static void testHttpMethodInNestedRouter() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            CompositeRouter kSubRouter = new CompositeRouter();
+            kSubRouter.addProcessor('/list', 'GET', new TestHealthCheckProcessor());
+            kSubRouter.addProcessor('/create', 'POST', new NotFoundProcessor());
+
+            CompositeRouter kMainRouter = new CompositeRouter();
+            kMainRouter.addRouter('/api/users/*', kSubRouter);
+
+            // When
+            APIContext kGetContext = new APIContext();
+            kGetContext.httpMethod = 'GET';
+            kGetContext = kMainRouter.route(kGetContext, '', '/api/users/list');
+
+            APIContext kPostContext = new APIContext();
+            kPostContext.httpMethod = 'POST';
+            kPostContext = kMainRouter.route(kPostContext, '', '/api/users/create');
+
+            // Then
+            Assert.isNotNull(kGetContext.processor, 'GET 요청이 매칭되어야 함');
+            Assert.isTrue(kGetContext.processor instanceof TestHealthCheckProcessor, 'GET은 TestHealthCheckProcessor여야 함');
+            Assert.isNotNull(kPostContext.processor, 'POST 요청이 매칭되어야 함');
+            Assert.isTrue(kPostContext.processor instanceof NotFoundProcessor, 'POST는 NotFoundProcessor여야 함');
+        }
+    }
+
+    /**
+     * @description Composite 라우터가 null 반환 시 다음 경로 시도 테스트
+     */
+    @IsTest
+    static void testCompositeRouterNullReturn() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given - 첫 번째 라우터는 /list만 처리, 두 번째 라우터는 /status 처리
+            CompositeRouter kRouter1 = new CompositeRouter();
+            kRouter1.addProcessor('/list', new TestHealthCheckProcessor());
+
+            CompositeRouter kRouter2 = new CompositeRouter();
+            kRouter2.addProcessor('/status', new NotFoundProcessor());
+
+            CompositeRouter kMainRouter = new CompositeRouter();
+            kMainRouter.addRouter('/api/*', kRouter1);
+            kMainRouter.addRouter('/api/*', kRouter2);
+
+            // When - /status는 첫 번째 라우터에 없으므로 두 번째 라우터에서 찾아야 함
+            APIContext kContext = kMainRouter.route(new APIContext(), '', '/api/status');
+
+            // Then
+            Assert.isNotNull(kContext.processor, '두 번째 라우터에서 Processor를 찾아야 함');
+            Assert.isTrue(kContext.processor instanceof NotFoundProcessor, 'NotFoundProcessor여야 함');
+        }
+    }
+
     class NotFoundProcessor implements APIProcessor {
         /**
          * @description 404 Not Found 응답 처리
@@ -607,6 +782,30 @@ private class CompositeRouter_ts {
             aRes.statusCode = 404;
             aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
             aRes.addHeader('Content-Type', 'application/json');
+        }
+    }
+
+    class GetProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            aRes.statusCode = 200;
+        }
+    }
+
+    class PostProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            aRes.statusCode = 201;
+        }
+    }
+
+    class PutProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            aRes.statusCode = 200;
+        }
+    }
+
+    class DeleteProcessor implements APIProcessor {
+        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            aRes.statusCode = 204;
         }
     }
 }

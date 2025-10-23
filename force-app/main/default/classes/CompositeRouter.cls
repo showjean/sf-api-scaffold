@@ -170,7 +170,8 @@ public class CompositeRouter implements APIRouter {
                     System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
 
                     aContext = ((APIRouter) kEntry.handler).route(aContext, kNewPrevPath, aPath);
-                    if (null != aContext) {
+                    // Processor를 찾았으면 반환, 못 찾았으면 다음 경로 시도
+                    if (null != aContext && null != aContext.processor) {
                         return aContext;
                     }
                 }
