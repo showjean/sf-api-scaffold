@@ -21,12 +21,32 @@ public abstract class APIRouterSuper implements APIRouter {
     }
 
     /**
+     * @description 하위 Router 등록
+     * @param aPattern 경로 패턴
+     * @param aHttpMethod Http Method
+     * @param aRouter APIRouter 구현체
+     */
+    public void addRouter(String aPattern, String aHttpMethod, APIRouter aRouter) {
+        this.compositeRouter.addRouter(aPattern, aHttpMethod, aRouter);
+    }
+
+    /**
      * @description Processor 등록 (Leaf)
      * @param aPattern 경로 패턴
      * @param aProcessor APIProcessor 구현체
      */
     public void addProcessor(String aPattern, APIProcessor aProcessor) {
         this.compositeRouter.addProcessor(aPattern, aProcessor);
+    }
+
+    /**
+     * @description Processor 등록 (Leaf)
+     * @param aPattern 경로 패턴
+     * @param aHttpMethod Http Method
+     * @param aProcessor APIProcessor 구현체
+     */
+    public void addProcessor(String aPattern, String aHttpMethod, APIProcessor aProcessor) {
+        this.compositeRouter.addProcessor(aPattern, aHttpMethod, aProcessor);
     }
 
     /**
