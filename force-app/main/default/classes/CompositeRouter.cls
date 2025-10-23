@@ -164,8 +164,10 @@ public class CompositeRouter implements APIRouter {
                         kNewPrevPath = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
                     }
 
-                    aContext.pattern = kNewPrevPath;
-                    aContext.pathVar = kPathFinder.parsePathVariables(kNewPrevPath, aPath);
+                    aContext = new APIContext.Builder(aContext)
+                        .pattern(kNewPrevPath)
+                        .pathVar(kPathFinder.parsePathVariables(kNewPrevPath, aPath))
+                        .build();
                     System.debug(LoggingLevel.INFO, 'Pattern: ' + kNewPrevPath);
                     System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
 
@@ -177,12 +179,15 @@ public class CompositeRouter implements APIRouter {
                 }
                 // Leaf인 경우 Processor 직접 반환
                 else if (kEntry.handler instanceof APIProcessor) {
-                    aContext.processor = (APIProcessor) kEntry.handler;
-                    aContext.pattern = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
-                    aContext.pathVar = kPathFinder.parsePathVariables(aContext.pattern, aPath);
-                    System.debug(LoggingLevel.INFO, 'Pattern: ' + aContext.pattern);
+                    String kPattern = kPathFinder.combine(kEffectivePrevPath, kEntry.pattern);
+                    aContext = new APIContext.Builder(aContext)
+                        .processor((APIProcessor) kEntry.handler)
+                        .pattern(kPattern)
+                        .pathVar(kPathFinder.parsePathVariables(kPattern, aPath))
+                        .build();
+                    System.debug(LoggingLevel.INFO, 'Pattern: ' + kPattern);
                     System.debug(LoggingLevel.INFO, 'Path: ' + aPath);
-                    
+
                     return aContext;
                 }
             }

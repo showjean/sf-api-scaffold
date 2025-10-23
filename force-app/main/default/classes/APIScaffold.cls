@@ -69,12 +69,13 @@ public class APIScaffold {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
 
-            APIContext kContext = new APIContext();
-            kContext.pattern = '';
-            kContext.requestUrl = kPath;
-            kContext.httpMethod = aReq.httpMethod;
-            kContext.processor = null;
-            
+            APIContext kContext = new APIContext.Builder()
+                .pattern('')
+                .requestUrl(kPath)
+                .httpMethod(aReq.httpMethod)
+                .processor(null)
+                .build();
+
             kContext = this.router.route(kContext, this.mainPath, kPath);
             APIProcessor kProcessor = kContext.processor;
 

@@ -38,7 +38,7 @@ private class APIRouterSuper_ts {
             TestRouter kRouter = new TestRouter();
             DummyRouter kDummyRouter = new DummyRouter();
             DummyProcessor kDummyProcessor = new DummyProcessor();
-            APIContext kContext = new APIContext();
+            APIContext kContext = new APIContext.Builder().build();
 
             // When & Then - 생성자 호출 (이미 완료)
             Assert.isNotNull(kRouter, 'Router 인스턴스 생성 확인');

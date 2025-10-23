@@ -8,7 +8,8 @@ public with sharing class ApiRestRouterSales extends APIRouterSuper {
     }
 
     public override APIContext route(APIContext aContext, String aPrevPath, String aPath) {
-        aContext.processor = new HealthCheckProcessor(aContext.pathVar.get('apiId'));
-        return aContext;
+        return new APIContext.Builder(aContext)
+                .processor(new HealthCheckProcessor(aContext.pathVar.get('apiId')))
+                .build();
     }
 }
