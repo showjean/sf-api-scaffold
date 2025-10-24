@@ -15,9 +15,9 @@ public class APIRouterV1 extends APIRouterSuper {
      */
     private void initializeRoutes() {
         // 헬스 체크 엔드포인트 (상대 경로)
-        this.addProcessor('/:id/:pw', new HealthCheckProcessor('root'));
-        this.addProcessor('/health', new HealthCheckProcessor('health'));
-        this.addProcessor('/*', new HealthCheckProcessor('***'));
+        this.addProcessor('/:id/:pw', new SimpleProcessor('root'));
+        this.addProcessor('/health', new SimpleProcessor('health'));
+        this.addProcessor('/*', new SimpleProcessor('***'));
 
         // 하위 라우터 등록 (상대 경로) - 재사용 가능
         this.addRouter('/users/*', new APIRouterV2());

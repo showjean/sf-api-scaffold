@@ -1,9 +1,9 @@
 /**
- * @description Health Check API Processor (예제)
+ * @description API Processor (예제)
  */
-public class HealthCheckProcessor implements APIProcessor {
+public class SimpleProcessor implements APIProcessor {
     final String label;
-    public HealthCheckProcessor(String aLabel) {
+    public SimpleProcessor(String aLabel) {
         this.label = aLabel;
     }
 
