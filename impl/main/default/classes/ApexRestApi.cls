@@ -10,6 +10,13 @@ global without sharing class ApexRestApi {
      * @param aRes RestResponse
      */
     global static void handleApi(RestRequest aReq, RestResponse aRes) {
+        // 반환되는 결과를 적당히 처리한다.
+        /*
+        1. @HttpX.. 메서드의 리턴 값으로 넘김
+          => Blob 변환이나 JSON 처리를 하지안하도 된다. (Limit 에 유리)
+        2. RestContext.response.responseBody 로 지정
+          => Blob 변환을 해야하지만, JSON 처리를 세밀하게 할 수 있다. (null 은 제외하는 등..)
+         */
         APIProcessResult kResult = APIScaffold.create('/api/*')
                 // all http method
                 .route('/sales/:apiId', new ApiRestRouterSales())
