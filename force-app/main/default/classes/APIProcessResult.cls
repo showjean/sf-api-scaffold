@@ -1,5 +1,5 @@
 /**
- * @description APIResult
+ * @description APIProcessResult
  * Created by hyodongmin on 2025. 10. 24.
  */
 public class APIProcessResult {
