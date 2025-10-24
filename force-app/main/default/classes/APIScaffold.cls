@@ -13,12 +13,12 @@ public class APIScaffold {
      */
     private APIScaffold(String aMainPath) {
         this.router = new APICompositeRouter();
-        this.mainPath = aMainPath;
+        this.mainPath = true == aMainPath?.endsWith('/*') ? aMainPath.substringBeforeLast('/*') : aMainPath;
     }
 
     /**
      * @description Builder 패턴 시작
-     * @param aMainPath Rest API 시작 path
+     * @param aMainPath Rest API 시작 path, Rest 설정 경로가 `@RestResource(UrlMapping='/api/*')` 라면 '/api' 를 입력한다.
      * @return APIScaffold 인스턴스 (체이닝용)
      */
     public static APIScaffold create(String aMainPath) {
@@ -107,11 +107,12 @@ public class APIScaffold {
         else {
             // 기본 예외 처리
             aRes.statusCode = 500;
-            Map<String, String> kErrorBody = new Map<String, String>{
-                'error' => aEx.getMessage(),
-                'type' => aEx.getTypeName()
-            };
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kErrorBody));
+            APIResponse kResponse = new APIResponse.Builder()
+                    .success(false)
+                    .error(aEx.getTypeName(), aEx.getMessage())
+                    .requestUrl(aReq.requestURI)
+                    .build();
+            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
         }
     }
 
