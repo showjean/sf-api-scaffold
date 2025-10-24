@@ -15,6 +15,7 @@ global without sharing class ApexRestApi {
                 .route('/sales/:apiId', new ApiRestRouterSales())
                 // 'POST' only
                 .route('/impl/*', 'POST', new ApiRestRouterImpl())
+                .exception(new APIDefaultExceptionHandler())
                 .process(aReq, aRes);
     }
     
