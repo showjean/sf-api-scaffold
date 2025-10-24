@@ -23,8 +23,8 @@ private class APIRouterSuper_ts {
      * @description 테스트용 더미 APIProcessor 구현체
      */
     private class DummyProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
-            // 더미 구현
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            return new APIProcessResult(200, '');
         }
     }
 

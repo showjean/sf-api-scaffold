@@ -16,7 +16,9 @@ private class APIDefaultExceptionHandler_ts {
             APIScaffold.ScaffoldException kEx = new APIScaffold.ScaffoldException('Route not found').statusCode(404);
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
 
             // Then
             Assert.areEqual(404, kRes.statusCode, 'RouteNotFoundException은 404를 반환해야 함');
@@ -42,7 +44,9 @@ private class APIDefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Something went wrong');
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
 
             // Then
             Assert.areEqual(500, kRes.statusCode, '일반 예외는 500을 반환해야 함');
@@ -65,7 +69,9 @@ private class APIDefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -93,7 +99,10 @@ private class APIDefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
+            kRes.headers.putAll(kResult.headers);
 
             // Then
             Map<String, String> kHeaders = kRes.headers;
@@ -114,7 +123,9 @@ private class APIDefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
 
             // Then
             String kResponseBody = kRes.responseBody.toString();
@@ -138,7 +149,9 @@ private class APIDefaultExceptionHandler_ts {
             Exception kEx = new CustomException('Test error');
 
             // When
-            kHandler.handle(kEx, new RestRequest(), kRes);
+            APIProcessResult kResult = kHandler.handle(kEx, new RestRequest(), kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
 
             // Then
             String kResponseBody = kRes.responseBody.toString();

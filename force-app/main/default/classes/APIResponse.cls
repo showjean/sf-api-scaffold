@@ -2,7 +2,7 @@
  * @description API 응답 정보를 담는 클래스 (Builder 패턴)
  * Created by fsj on 2025-10-24
  */
-public class APIResponse {
+public class APIResponse extends APIRes {
     /**
      * @description 성공 여부
      */

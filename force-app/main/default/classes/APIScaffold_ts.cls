@@ -24,7 +24,9 @@ private class APIScaffold_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(200, kRes.statusCode, 'Status code는 200이어야 함');
@@ -54,7 +56,9 @@ private class APIScaffold_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(200, kRes.statusCode, 'V2 라우팅도 정상 동작해야 함');
@@ -79,7 +83,9 @@ private class APIScaffold_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(404, kRes.statusCode, '존재하지 않는 경로는 404를 반환해야 함');
@@ -103,7 +109,9 @@ private class APIScaffold_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then - 기본 예외 처리로 500 반환
             Assert.areEqual(500, kRes.statusCode, '기본 예외 처리는 500을 반환해야 함');
@@ -128,7 +136,9 @@ private class APIScaffold_ts {
             kReqV1.requestURI = '/api/v1.0/health';
             RestResponse kResV1 = new RestResponse();
 
-            kScaffold.process(kReqV1, kResV1);
+            APIProcessResult kResult = kScaffold.process(kReqV1, kResV1);
+            kResV1.statusCode = kResult.statusCode;
+            kResV1.responseBody = Blob.valueOf(JSON.serialize(kResult));
             Assert.areEqual(200, kResV1.statusCode, 'V1 경로가 정상 작동해야 함');
 
             // When & Then - V2 테스트
@@ -136,7 +146,9 @@ private class APIScaffold_ts {
             kReqV2.requestURI = '/api/v2.0/health';
             RestResponse kResV2 = new RestResponse();
 
-            kScaffold.process(kReqV2, kResV2);
+            kResult = kScaffold.process(kReqV2, kResV2);
+            kResV2.statusCode = kResult.statusCode;
+            kResV2.responseBody = Blob.valueOf(JSON.serialize(kResult));
             Assert.areEqual(200, kResV2.statusCode, 'V2 경로가 정상 작동해야 함');
         }
     }
@@ -161,11 +173,11 @@ private class APIScaffold_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
 
             // Then
-            Assert.areEqual(500, kRes.statusCode, '예외 발생 시 500을 반환해야 함');
-            String kResponseBody = kRes.responseBody.toString();
+            Assert.areEqual(500, kResult.statusCode, '예외 발생 시 500을 반환해야 함');
+            String kResponseBody = JSON.serialize(kResult.res);
             Assert.isTrue(kResponseBody.contains('Test error'), '에러 메시지가 포함되어야 함');
         }
     }
@@ -174,7 +186,7 @@ private class APIScaffold_ts {
      * @description Mock Processor - 에러를 발생시킴
      */
     private class MockErrorProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             throw new CustomException('Test error');
         }
     }
@@ -274,7 +286,10 @@ private class APIScaffold_ts {
             kReq.httpMethod = 'GET';
             RestResponse kRes = new RestResponse();
 
-            kScaffold.process(kReq, kRes);
+
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(200, kRes.statusCode, 'mainPath가 적용된 경로가 정상 작동해야 함');
@@ -305,7 +320,9 @@ private class APIScaffold_ts {
             kGetReq.httpMethod = 'GET';
             RestResponse kGetRes = new RestResponse();
 
-            kScaffold.process(kGetReq, kGetRes);
+            APIProcessResult kResult = kScaffold.process(kGetReq, kGetRes);
+            kGetRes.statusCode = kResult.statusCode;
+            kGetRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(200, kGetRes.statusCode, 'GET 요청이 정상 처리되어야 함');
@@ -318,7 +335,9 @@ private class APIScaffold_ts {
             kPostReq.httpMethod = 'POST';
             RestResponse kPostRes = new RestResponse();
 
-            kScaffold.process(kPostReq, kPostRes);
+            kResult = kScaffold.process(kPostReq, kPostRes);
+            kPostRes.statusCode = kResult.statusCode;
+            kPostRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(201, kPostRes.statusCode, 'POST 요청이 정상 처리되어야 함');
@@ -348,7 +367,9 @@ private class APIScaffold_ts {
             kReq.httpMethod = 'GET';
             RestResponse kRes = new RestResponse();
 
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(200, kRes.statusCode, '요청이 정상 처리되어야 함');
@@ -380,7 +401,9 @@ private class APIScaffold_ts {
             kReq.httpMethod = 'POST';
             RestResponse kRes = new RestResponse();
 
-            kScaffold.process(kReq, kRes);
+            APIProcessResult kResult = kScaffold.process(kReq, kRes);
+            kRes.statusCode = kResult.statusCode;
+            kRes.responseBody = Blob.valueOf(JSON.serialize(kResult));
 
             // Then
             Assert.areEqual(404, kRes.statusCode, 'HTTP 메서드가 맞지 않으면 404를 반환해야 함');
@@ -388,55 +411,51 @@ private class APIScaffold_ts {
     }
 
     class TestHealthCheckProcessor implements APIProcessor {
-        /**
-         * @description 헬스 체크 요청 처리
-         * @param aContext APIContext 객체
-         * @param aReq RestRequest 객체
-         * @param aRes RestResponse 객체
-         */
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                     'status' => 'healthy',
                     'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
                     'version' => '1.0.0'
             };
 
-            aRes.statusCode = 200;
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-            aRes.addHeader('Content-Type', 'application/json');
+            return new APIProcessResult(200, kResponse).header(
+                    'Content-Type', 'application/json'
+            );
         }
     }
 
     class GetUsersProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                 'users' => new List<String>{'user1', 'user2'}
             };
-            aRes.statusCode = 200;
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-            aRes.addHeader('Content-Type', 'application/json');
+
+            return new APIProcessResult(200, kResponse).header(
+                    'Content-Type', 'application/json'
+            );
         }
     }
 
     class CreateUserProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                 'message' => 'User created',
                 'userId' => '123'
             };
-            aRes.statusCode = 201;
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-            aRes.addHeader('Content-Type', 'application/json');
+
+            return new APIProcessResult(201, kResponse).header(
+                    'Content-Type', 'application/json'
+            );
         }
     }
 
     class ContextCheckProcessor implements APIProcessor {
         public APIContext receivedContext;
 
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             this.receivedContext = aContext;
-            aRes.statusCode = 200;
-            aRes.responseBody = Blob.valueOf('OK');
+
+            return new APIProcessResult(200, 'OK');
         }
     }
 

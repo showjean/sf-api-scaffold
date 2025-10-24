@@ -63,8 +63,9 @@ public class APIScaffold {
      * @description Rest API 요청 처리
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    public void process(RestRequest aReq, RestResponse aRes) {
+    public APIProcessResult process(RestRequest aReq, RestResponse aRes) {
         try {
             String kPath = aReq.requestURI;
             System.debug(LoggingLevel.INFO, '⭐️Main path: ' + this.mainPath + ', requestURI: ' + kPath);
@@ -82,15 +83,13 @@ public class APIScaffold {
             if (kProcessor != null) {
                 System.debug(LoggingLevel.INFO, '✅Processor -> ' + kProcessor.toString().substringBefore(':'));
                 System.debug(LoggingLevel.INFO, 'Context -> ' + kContext);
-                kProcessor.process(kContext, aReq, aRes);
+                return kProcessor.process(kContext, aReq, aRes);
             }
-            else {
-                // 매칭되는 경로가 없는 경우
-                throw new ScaffoldException('No matching route found for: ' + kPath).statusCode(404);
-            }
+            // 매칭되는 경로가 없는 경우
+            throw new ScaffoldException('No matching route found for: ' + kPath).statusCode(404);
         }
         catch (Exception kEx) {
-            this.handleException(kEx, aReq, aRes);
+            return this.handleException(kEx, aReq, aRes);
         }
     }
 
@@ -99,20 +98,20 @@ public class APIScaffold {
      * @param aEx 발생한 예외
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    private void handleException(Exception aEx,  RestRequest aReq, RestResponse aRes) {
+    private APIProcessResult handleException(Exception aEx,  RestRequest aReq, RestResponse aRes) {
         if (this.exceptionHandler != null) {
-            this.exceptionHandler.handle(aEx, aReq, aRes);
+            return this.exceptionHandler.handle(aEx, aReq, aRes);
         }
         else {
             // 기본 예외 처리
-            aRes.statusCode = 500;
             APIResponse kResponse = new APIResponse.Builder()
                     .success(false)
                     .error(aEx.getTypeName(), aEx.getMessage())
                     .requestUrl(aReq.requestURI)
                     .build();
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
+            return new APIProcessResult(500, kResponse);
         }
     }
 

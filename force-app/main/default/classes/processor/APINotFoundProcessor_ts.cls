@@ -17,10 +17,10 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            Assert.areEqual(404, kRes.statusCode, '404 상태 코드를 반환해야 함');
+            Assert.areEqual(404, kResult.statusCode, '404 상태 코드를 반환해야 함');
         }
     }
 
@@ -37,12 +37,12 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            Assert.isNotNull(kRes.responseBody, 'Response body가 있어야 함');
+            Assert.isNotNull(kResult.res, 'Response body가 있어야 함');
 
-            String kResponseBody = kRes.responseBody.toString();
+            String kResponseBody = JSON.serialize(kResult.res);
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
             Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
 
@@ -66,10 +66,10 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            String kResponseBody = kRes.responseBody.toString();
+            String kResponseBody = JSON.serialize(kResult.res);
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
             Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
             Assert.areEqual(kRequestURI, kResponse.get('requestUrl'), '요청 경로가 응답에 포함되어야 함');
@@ -89,10 +89,10 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            Map<String, String> kHeaders = kRes.headers;
+            Map<String, String> kHeaders = kResult.headers;
             Assert.isTrue(kHeaders.containsKey('Content-Type'), 'Content-Type 헤더가 있어야 함');
             Assert.areEqual('application/json', kHeaders.get('Content-Type'), 'Content-Type은 application/json이어야 함');
         }
@@ -111,10 +111,10 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            String kResponseBody = kRes.responseBody.toString();
+            String kResponseBody = JSON.serialize(kResult.res);
             Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
             Map<String, Object> kError = (Map<String, Object>)kResponse.get('error');
             
@@ -145,11 +145,11 @@ private class APINotFoundProcessor_ts {
                 kReq.requestURI = kPath;
                 RestResponse kRes = new RestResponse();
 
-                kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+                APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
-                Assert.areEqual(404, kRes.statusCode, kPath + '는 404를 반환해야 함');
+                Assert.areEqual(404, kResult.statusCode, kPath + '는 404를 반환해야 함');
 
-                String kResponseBody = kRes.responseBody.toString();
+                String kResponseBody = JSON.serialize(kResult.res);
                 Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);
                 Assert.areEqual(kPath, kResponse.get('requestUrl'), '응답에 정확한 경로가 포함되어야 함');
             }
@@ -169,10 +169,10 @@ private class APINotFoundProcessor_ts {
             RestResponse kRes = new RestResponse();
 
             // When
-            kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
+            APIProcessResult kResult = kProcessor.process(new APIContext.Builder().build(), kReq, kRes);
 
             // Then
-            String kResponseBody = kRes.responseBody.toString();
+            String kResponseBody = JSON.serialize(kResult.res);
 
             try {
                 Map<String, Object> kResponse = (Map<String, Object>)JSON.deserializeUntyped(kResponseBody);

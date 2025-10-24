@@ -7,6 +7,7 @@ public interface APIProcessor {
      * @param aContext APIContext 객체
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    void process(APIContext aContext, RestRequest aReq, RestResponse aRes);
+    APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes);
 }

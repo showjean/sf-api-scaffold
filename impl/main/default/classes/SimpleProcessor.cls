@@ -12,19 +12,21 @@ public class SimpleProcessor implements APIProcessor {
      * @param aContext APIContext 객체
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+    public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
         Map<String, Object> kResponse = new Map<String, Object>{
             'status' => this.label ?? 'healthy',
             'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
             'version' => '1.0.0',
-            'httpMethod' => aContext.httpMethod
+            'httpMethod' => aContext.httpMethod,
+            'req' => JSON.deserializeUntyped(aReq.requestBody.toString())
         };
         
         System.debug(LoggingLevel.INFO, JSON.serialize(aContext.pathVar));
 
-        aRes.statusCode = 200;
-        aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-        aRes.addHeader('Content-Type', 'application/json');
+        return new APIProcessResult(200, kResponse).header(
+                'Content-Type', 'application/json'
+        );
     }
 }

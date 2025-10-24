@@ -7,8 +7,9 @@ public class APIDefaultExceptionHandler implements APIExceptionHandler {
      * @param aEx 발생한 예외
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    public void handle(Exception aEx, RestRequest aReq, RestResponse aRes) {
+    public APIProcessResult handle(Exception aEx, RestRequest aReq, RestResponse aRes) {
         System.debug(LoggingLevel.ERROR, 'API Exception: ' + aEx.getMessage());
         System.debug(LoggingLevel.ERROR, 'Stack Trace: ' + aEx.getStackTraceString());
 
@@ -26,8 +27,8 @@ public class APIDefaultExceptionHandler implements APIExceptionHandler {
                 .error(kErrorType, aEx.getMessage())
                 .build();
 
-        aRes.statusCode = kStatusCode;
-        aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-        aRes.addHeader('Content-Type', 'application/json');
+        return new APIProcessResult(kStatusCode, kResponse).header(
+                'Content-Type', 'application/json'
+        );
     }
 }

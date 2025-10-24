@@ -10,7 +10,7 @@ global without sharing class ApexRestApi {
      * @param aRes RestResponse
      */
     global static void handleApi(RestRequest aReq, RestResponse aRes) {
-        APIScaffold.create('/api/*')
+        APIProcessResult kResult = APIScaffold.create('/api/*')
                 // all http method
                 .route('/sales/:apiId', new ApiRestRouterSales())
                 .route('/:mod/:apiId', new ApiRestRouterSales())
@@ -18,6 +18,10 @@ global without sharing class ApexRestApi {
                 .route('/impl/*', 'POST', new ApiRestRouterImpl())
                 .exception(new APIDefaultExceptionHandler())
                 .process(aReq, aRes);
+
+        aRes.headers.putAll(kResult.headers);
+        aRes.statusCode = kResult.statusCode;
+        aRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
     }
     
     @HttpPost

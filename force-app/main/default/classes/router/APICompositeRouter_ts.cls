@@ -539,22 +539,16 @@ private class APICompositeRouter_ts {
     }
 
     class TestHealthCheckProcessor implements APIProcessor {
-        /**
-         * @description 헬스 체크 요청 처리
-         * @param aContext APIContext 객체
-         * @param aReq RestRequest 객체
-         * @param aRes RestResponse 객체
-         */
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                     'status' => 'healthy',
                     'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\''),
                     'version' => '1.0.0'
             };
 
-            aRes.statusCode = 200;
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-            aRes.addHeader('Content-Type', 'application/json');
+            return new APIProcessResult(200, kResponse).header(
+                    'Content-Type', 'application/json'
+            );
         }
     }
 
@@ -779,46 +773,40 @@ private class APICompositeRouter_ts {
     }
 
     class NotFoundProcessor implements APIProcessor {
-        /**
-         * @description 404 Not Found 응답 처리
-         * @param aContext APIContext 객체
-         * @param aReq RestRequest 객체
-         * @param aRes RestResponse 객체
-         */
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
             Map<String, Object> kResponse = new Map<String, Object>{
                     'error' => 'Not Found',
                     'message' => 'The requested resource was not found',
                     'timestamp' => Datetime.now().format('yyyy-MM-dd\'T\'HH:mm:ss\'Z\'')
             };
 
-            aRes.statusCode = 404;
-            aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-            aRes.addHeader('Content-Type', 'application/json');
+            return new APIProcessResult(404, kResponse).header(
+                    'Content-Type', 'application/json'
+            );
         }
     }
 
     class GetProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
-            aRes.statusCode = 200;
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            return new APIProcessResult(200, '');
         }
     }
 
     class PostProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
-            aRes.statusCode = 201;
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            return new APIProcessResult(201, '');
         }
     }
 
     class PutProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
-            aRes.statusCode = 200;
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            return new APIProcessResult(200, '');
         }
     }
 
     class DeleteProcessor implements APIProcessor {
-        public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
-            aRes.statusCode = 204;
+        public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+            return new APIProcessResult(204, '');
         }
     }
 }

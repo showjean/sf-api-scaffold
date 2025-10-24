@@ -21,7 +21,7 @@ public with sharing class ApiRestRouterSales extends APIRouterSuper {
         }
         
         return new APIContext.Builder(aContext)
-                .processor(kApiProcessor)
+                .processor(kApiProcessor ?? new APINotFoundProcessor())
                 .build();
     }
 }

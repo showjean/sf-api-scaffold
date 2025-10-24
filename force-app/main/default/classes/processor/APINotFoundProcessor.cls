@@ -7,15 +7,17 @@ public class APINotFoundProcessor implements APIProcessor {
      * @param aContext APIContext 객체
      * @param aReq RestRequest 객체
      * @param aRes RestResponse 객체
+     * @return APIProcessResult
      */
-    public void process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
+    public APIProcessResult process(APIContext aContext, RestRequest aReq, RestResponse aRes) {
         APIResponse kResponse = new APIResponse.Builder()
                 .success(false)
                 .error('Not Found', 'The requested resource was not found')
                 .requestUrl(aReq.requestURI)
                 .build();
-        aRes.statusCode = 404;
-        aRes.responseBody = Blob.valueOf(JSON.serialize(kResponse));
-        aRes.addHeader('Content-Type', 'application/json');
+
+        return new APIProcessResult(404, kResponse).header(
+                'Content-Type', 'application/json'
+        );
     }
 }
