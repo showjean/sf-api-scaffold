@@ -8,14 +8,16 @@ public with sharing class ApiRestRouterSales extends APIRouterSuper {
     }
 
     public override APIContext route(APIContext aContext, String aPrevPath, String aPath) {
-        String kApiId = aContext.pathVar.get('apiId');
+        String kModule = aContext.pathVar.get('mod') ?? '';
+        String kApiId = aContext.pathVar.get('apiId') ?? '';
+        String kLabel = kModule + ':' + kApiId;
 
-        // 경로에 포함된 api id 를 기준으로 프로세서 구분
+                // 경로에 포함된 api id 를 기준으로 프로세서 구분
         APIProcessor kApiProcessor;
-        if ('a' == kApiId) {
-            kApiProcessor = new SimpleProcessor(kApiId);
-        } else if ('b' == kApiId) {
-            kApiProcessor = new SimpleProcessor(kApiId);
+        if (kApiId.startsWith('a')) {
+            kApiProcessor = new SimpleProcessor(kLabel);
+        } else if (kApiId.startsWith('b')) {
+            kApiProcessor = new SimpleProcessor(kLabel);
         }
         
         return new APIContext.Builder(aContext)

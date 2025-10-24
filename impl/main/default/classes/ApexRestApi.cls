@@ -13,6 +13,7 @@ global without sharing class ApexRestApi {
         APIScaffold.create('/api/*')
                 // all http method
                 .route('/sales/:apiId', new ApiRestRouterSales())
+                .route('/:mod/:apiId', new ApiRestRouterSales())
                 // 'POST' only
                 .route('/impl/*', 'POST', new ApiRestRouterImpl())
                 .exception(new APIDefaultExceptionHandler())
