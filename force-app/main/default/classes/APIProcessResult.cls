@@ -28,4 +28,14 @@ public class APIProcessResult {
         this.headers.put(aKey, aValue);
         return this;
     }
+
+    /**
+     * @description RestResponse 로 결과값을 옮긴다. (Header, statusCode, body)
+     * @param aRestRes RestResponse
+     */
+    public void respond(RestResponse aRestRes) {
+        aRestRes.statusCode = this.statusCode;
+        aRestRes.headers.putAll(this.headers);
+        aRestRes.responseBody = Blob.valueOf(JSON.serialize(this.res));
+    }
 }

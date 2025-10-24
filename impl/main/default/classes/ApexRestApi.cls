@@ -25,10 +25,8 @@ global without sharing class ApexRestApi {
                 .route('/impl/*', 'POST', new ApiRestRouterImpl())
                 .exception(new APIDefaultExceptionHandler())
                 .process(aReq, aRes);
-
-        aRes.headers.putAll(kResult.headers);
-        aRes.statusCode = kResult.statusCode;
-        aRes.responseBody = Blob.valueOf(JSON.serialize(kResult.res));
+        
+        kResult.respond(aRes);
     }
     
     @HttpPost

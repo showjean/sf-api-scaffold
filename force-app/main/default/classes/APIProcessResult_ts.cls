@@ -35,4 +35,24 @@ private class APIProcessResult_ts {
             Assert.areEqual(kResult, kChainedResult, 'header() 메서드는 self를 반환해야 함');
         }
     }
+
+    @IsTest
+    static void testRespond() {
+        System.runAs(new User(Id = UserInfo.getUserId())) {
+            // Given
+            Integer kStatusCode = 200;
+            String kResponseBody = 'test response';
+
+            // When - 생성자 호출
+            APIProcessResult kResult = new APIProcessResult(kStatusCode, kResponseBody)
+                    .header('Content-Type', 'application/json');
+
+            RestResponse kRes = new RestResponse();
+            kResult.respond(kRes);
+
+            Assert.areEqual(200, kRes.statusCode, 'statusCode가 200이어야 함');
+            Assert.areEqual('"test response"', kRes.responseBody.toString(), 'responseBody `test response`이어야 함');
+            Assert.areEqual('application/json', kRes.headers.get('Content-Type'), 'Content-Type 확인');
+        }
+    }
 }
